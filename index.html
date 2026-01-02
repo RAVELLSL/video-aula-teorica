@@ -629,24 +629,49 @@ body[data-theme="dark"] .modalSearch:focus{
     max-width: 100%;
   }
 
-  /* 2) Drawer (menu lateral) ocupa toda a largura no smartphone (evita aperto interno) */
+  /* 2) Altura real da viewport no mobile (evita bug do 100vh e estouro vertical) */
+  .app{
+    height: 100vh;        /* fallback */
+    min-height: 100vh;    /* fallback */
+  }
+  @supports (height: 100dvh){
+    .app{ height: 100dvh; min-height: 100dvh; }
+  }
+  @supports (height: 100svh){
+    .app{ height: 100svh; min-height: 100svh; }
+  }
+
+  /* 3) Permite o “miolo” (área do vídeo) encolher e rolar dentro do grid */
+  main.main{
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr) auto; /* crítico em telas pequenas */
+  }
+  .playerWrap{
+    min-height: 0;                 /* crítico para não “empurrar” além da tela */
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
+  }
+
+  /* 4) Drawer (menu lateral) ocupa toda a largura no smartphone */
   aside.sidebar{
-    width: 100vw;       /* sobrescreve o min(92vw, 420px) no smartphone */
+    width: 100vw;
     max-width: 100vw;
     padding: 12px 10px;
     border-right: none;
   }
 
-  /* 3) Botões: permitem quebra de linha e ficam mais compactos */
+  /* 5) Botões: permitem quebra de linha e ficam mais compactos */
   .btn{
     padding: 9px 10px;
     font-size: 12px;
-    white-space: normal;     /* remove o “nowrap” no mobile */
+    white-space: normal;
     line-height: 1.15;
     text-align: center;
   }
 
-  /* 4) Topbar: vira layout em linhas para tudo caber sem cortar */
+  /* 6) Topbar: layout em linhas para tudo caber sem cortar */
   .topbar{
     padding: 12px 12px;
     gap: 10px;
@@ -657,14 +682,11 @@ body[data-theme="dark"] .modalSearch:focus{
     flex: 1 1 100%;
     min-width: 0;
   }
-  .topbar h2{
-    font-size: 15px;
-  }
+  .topbar h2{ font-size: 15px; }
   .topbar p{
     font-size: 12px;
-    max-height: none;         /* evita truncamento excessivo no mobile */
+    max-height: none;
   }
-  /* Se houver mais de um botão no header, eles quebram e ocupam 100%/50% */
   .topbar .btn,
   .topbar .menuToggle{
     flex: 1 1 calc(50% - 6px);
@@ -672,7 +694,7 @@ body[data-theme="dark"] .modalSearch:focus{
     justify-content: center;
   }
 
-  /* 5) Brand / ações do menu: empilha (mais confiável que 2 colunas) */
+  /* 7) Brand / ações do menu: empilha */
   .brand{
     flex-wrap: wrap;
     align-items: center;
@@ -682,13 +704,13 @@ body[data-theme="dark"] .modalSearch:focus{
   .brandActions{
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr; /* evita qualquer estouro por texto longo */
+    grid-template-columns: 1fr;
     gap: 8px;
     align-items: stretch;
   }
   .brandActions .btn{ width: 100%; }
 
-  /* 6) Busca: organiza em grade vertical e evita inputs “esticarem” */
+  /* 8) Busca: organiza em grade vertical */
   .searchRow{
     display: grid;
     grid-template-columns: 1fr;
@@ -705,27 +727,22 @@ body[data-theme="dark"] .modalSearch:focus{
     flex-wrap: wrap;
     gap: 6px;
   }
-  .hintRow span{
-    flex: 1 1 100%;
-  }
+  .hintRow span{ flex: 1 1 100%; }
 
-  /* 7) Árvore: reduz espaçamentos e permite quebra controlada de títulos */
+  /* 9) Árvore: reduz espaçamentos e permite quebra controlada de títulos */
   nav#tree{
     padding: 4px;
     padding-bottom: 72px;
   }
-  details.cat{
-    margin-bottom: 8px;
-  }
+  details.cat{ margin-bottom: 8px; }
   summary.catSummary{
     padding: 10px 10px;
     gap: 8px;
   }
 
-  /* Títulos: podem quebrar em até 2 linhas (sem “estourar” a largura) */
   .catTitle strong,
   .catTitle span{
-    white-space: normal;      /* remove ellipsis forçado no mobile */
+    white-space: normal;
     overflow: hidden;
     text-overflow: clip;
     display: -webkit-box;
@@ -733,13 +750,12 @@ body[data-theme="dark"] .modalSearch:focus{
     -webkit-line-clamp: 2;
   }
 
-  /* Badge menor para não “empurrar” o layout */
   .badge{
     font-size: 10px;
     padding: 3px 7px;
   }
 
-  /* 8) Botões/listas: quebra de palavras e links longos */
+  /* 10) Botões/listas: quebra de palavras e links longos */
   button.lessonBtn,
   .resultBtn,
   .chip,
@@ -747,28 +763,35 @@ body[data-theme="dark"] .modalSearch:focus{
     overflow-wrap: anywhere;
     word-break: break-word;
   }
+  .resultMeta{ white-space: normal; }
 
-  /* Result meta: permite quebrar (antes era nowrap) para caber */
-  .resultMeta{
-    white-space: normal;
+  /* 11) Player: ajustes finos (mantém 16:9 e evita “empurrão” do layout) */
+  .playerCard{ padding: 10px; }
+  .aspect{
+    width: 100%;
+    /* se o device/browser calcular altura “agressiva”, este teto evita overflow */
+    max-height: calc(100svh - 240px);
+  }
+  @supports (height: 100dvh){
+    .aspect{ max-height: calc(100dvh - 240px); }
   }
 
-  /* 9) Player: mais área útil */
-  .playerWrap{
-    padding: 12px;
-  }
-  .playerCard{
-    padding: 10px;
-  }
   .placeholder{
     inset: 10px;
     padding: 18px;
   }
-  .placeholder h3{
-    font-size: 15px;
-  }
+  .placeholder h3{ font-size: 15px; }
 
-  /* 10) Painel inferior: header empilha e chips não causam overflow lateral */
+  /* 12) Painel inferior: limita a altura no mobile para não “invadir” o vídeo */
+  .lessonPanel{
+    min-height: 0;
+    max-height: 34vh; /* fallback */
+    overflow: hidden;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  @supports (height: 100dvh){
+    .lessonPanel{ max-height: 34dvh; }
+  }
   .lessonPanelHeader{
     flex-wrap: wrap;
     align-items: flex-start;
@@ -778,14 +801,24 @@ body[data-theme="dark"] .modalSearch:focus{
     text-align: left;
   }
   .lessonChips{
+    overflow: auto;
     overflow-x: hidden;
+    max-height: 190px;
+  }
+  @supports (height: 100dvh){
+    .lessonChips{ max-height: min(190px, 24dvh); }
   }
 
-  /* 11) Modal: ocupa quase toda a tela e respeita safe-areas */
+  /* 13) Modal: ocupa quase toda a tela e respeita safe-areas */
   .modalDialog{
     width: calc(100vw - 16px);
     max-height: calc(100vh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     border-radius: 14px;
+  }
+  @supports (height: 100dvh){
+    .modalDialog{
+      max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    }
   }
   .modalHeader{
     flex-direction: column;
@@ -798,13 +831,11 @@ body[data-theme="dark"] .modalSearch:focus{
     align-items: stretch;
     gap: 8px;
   }
-  .modalHeaderLeft strong{
-    white-space: normal;
-  }
+  .modalHeaderLeft strong{ white-space: normal; }
   .modalSearch{
     width: 100%;
     min-width: 0;
-    font-size: 16px; /* evita zoom iOS */
+    font-size: 16px;
   }
   .modalHeaderRight{
     width: 100%;
@@ -814,9 +845,7 @@ body[data-theme="dark"] .modalSearch:focus{
     white-space: normal;
     text-align: right;
   }
-  .modalBody{
-    padding: 8px;
-  }
+  .modalBody{ padding: 8px; }
 }
 
   </style>
