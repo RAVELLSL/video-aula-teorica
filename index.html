@@ -1,0 +1,3096 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biblioteca de Aulas</title>
+
+  <style>
+    :root{
+      --radius: 14px;
+      --sidebarW: 360px;
+      --shadow: 0 10px 40px rgba(0,0,0,.10);
+      --shadowStrong: 0 14px 55px rgba(0,0,0,.18);
+    }
+
+    /* =========================================================
+       THEME TOKENS (default: LIGHT)
+       - regra: a página sempre inicia no tema claro
+       - destaque:
+         tema claro  -> destaque escuro
+         tema escuro -> destaque claro
+       ========================================================= */
+    body[data-theme="light"]{
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --panel2: #f2f4ff;
+      --text: #101528;
+      --muted: #5a6480;
+      --border: rgba(16,21,40,.14);
+
+      --activeBg: #111827;
+      --activeText: #ffffff;
+
+      --openCatBg: #111827;
+      --openCatText: #ffffff;
+
+      --hoverBg: rgba(17,24,39,.06);
+      --hoverBorder: rgba(17,24,39,.20);
+
+      --chipBg: rgba(17,24,39,.06);
+      --chipBorder: rgba(17,24,39,.14);
+    }
+
+    body[data-theme="dark"]{
+      --bg: #0b0f19;
+      --panel: #0f1526;
+      --panel2: #121a30;
+      --text: #e8eefc;
+      --muted: #a9b6d6;
+      --border: rgba(255,255,255,.12);
+
+      --activeBg: #e8eefc;
+      --activeText: #0b0f19;
+
+      --openCatBg: #e8eefc;
+      --openCatText: #0b0f19;
+
+      --hoverBg: rgba(232,238,252,.08);
+      --hoverBorder: rgba(232,238,252,.22);
+
+      --chipBg: rgba(255,255,255,.05);
+      --chipBorder: rgba(255,255,255,.14);
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Layout (desktop/notebook: menu lateral + área de vídeo) */
+    .app{
+      height: 100%;
+      display: grid;
+      grid-template-columns: var(--sidebarW) 1fr;
+      min-height: 100vh;
+    }
+
+    aside.sidebar{
+      border-right: 1px solid var(--border);
+      background: var(--panel);
+      padding: 14px 12px;
+
+      /* Importante: evita a última categoria ficar “escondida” ao final do scroll */
+      overflow: auto;
+      padding-bottom: calc(14px + 72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    main.main{
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-width: 0;
+      background: linear-gradient(180deg, var(--panel2), var(--bg));
+    }
+
+    /* Header */
+    .topbar{
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .topbar .titles{ min-width: 0; flex: 1; }
+    .topbar h2{
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: .2px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .topbar p{
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+      max-height: 2.7em;
+      overflow: hidden;
+    }
+
+    /* Buttons */
+    .btn{
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: .15s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .btn:hover{
+      background: var(--hoverBg);
+      border-color: var(--hoverBorder);
+    }
+    .btnPrimary{
+      background: var(--activeBg);
+      color: var(--activeText);
+      border-color: transparent;
+    }
+
+    /* Player */
+    .playerWrap{
+      padding: 16px;
+      overflow: auto;
+    }
+    .playerCard{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .aspect{
+      position: relative;
+      width: 100%;
+      border-radius: calc(var(--radius) - 6px);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.06);
+      aspect-ratio: 16 / 9;
+    }
+    iframe#player{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .placeholder{
+      position: absolute;
+      inset: 12px;
+      border-radius: calc(var(--radius) - 6px);
+      border: 1px dashed var(--border);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 22px;
+      background: linear-gradient(180deg, var(--panel2), rgba(0,0,0,0));
+    }
+    .placeholder h3{
+      margin: 0;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .placeholder p{
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      max-width: 560px;
+    }
+
+    /* Bottom panel */
+    .lessonPanel{
+      border-top: 1px solid var(--border);
+      background: var(--panel);
+      padding: 10px 16px;
+    }
+    .lessonPanelHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .lessonPanelHeader h3{
+      margin: 0;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .lessonCount{
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .lessonChips{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 190px;
+      overflow: auto;
+      padding-bottom: 6px;
+    }
+    .chip{
+      border: 1px solid var(--chipBorder);
+      background: var(--chipBg);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: .15s ease;
+      max-width: 100%;
+      text-align: left;
+    }
+    .chip:hover{
+      background: var(--hoverBg);
+      border-color: var(--hoverBorder);
+    }
+    .chip.active{
+      background: var(--activeBg);
+      color: var(--activeText);
+      border-color: transparent;
+      box-shadow: 0 0 0 3px rgba(0,0,0,.08);
+    }
+    body[data-theme="dark"] .chip.active{
+      box-shadow: 0 0 0 3px rgba(255,255,255,.10);
+    }
+
+    /* Sidebar header */
+    .brand{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 4px 6px 10px;
+    }
+    .brand h1{
+      margin: 0;
+      font-size: 14px;
+      font-weight: 950;
+      letter-spacing: .3px;
+    }
+    .brand small{
+      display:block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .brandActions{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+    }
+
+    /* Search */
+    .searchBox{
+      padding: 6px;
+      display: grid;
+      gap: 8px;
+    }
+    .searchRow{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+    }
+    .searchBox input{
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      outline: none;
+    }
+    .searchBox input:focus{
+      border-color: var(--hoverBorder);
+      box-shadow: 0 0 0 3px rgba(0,0,0,.08);
+    }
+    body[data-theme="dark"] .searchBox input:focus{
+      box-shadow: 0 0 0 3px rgba(255,255,255,.10);
+    }
+    .hintRow{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 0 2px;
+    }
+
+    /* Tree */
+    nav#tree{
+      padding: 6px;
+      padding-bottom: 72px;
+    }
+    details.cat{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    details.cat[open]{
+      background: var(--openCatBg);
+      color: var(--openCatText);
+      border-color: transparent;
+      box-shadow: var(--shadowStrong);
+    }
+
+    summary.catSummary{
+      list-style: none;
+      cursor: pointer;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      user-select: none;
+    }
+    summary.catSummary::-webkit-details-marker{ display:none; }
+
+    .catTitle{
+      min-width: 0;
+      display:flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .catTitle strong{
+      font-size: 13px;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .catTitle span{
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    details.cat[open] .catTitle span{ color: rgba(255,255,255,.86); }
+    body[data-theme="dark"] details.cat[open] .catTitle span{ color: rgba(11,15,25,.84); }
+
+    .badge{
+      flex: 0 0 auto;
+      font-size: 11px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.04);
+    }
+    details.cat[open] .badge{
+      color: inherit;
+      border-color: rgba(255,255,255,.55);
+      background: rgba(255,255,255,.10);
+    }
+    body[data-theme="dark"] details.cat[open] .badge{
+      border-color: rgba(11,15,25,.55);
+      background: rgba(11,15,25,.10);
+    }
+
+    ul.lessonList{
+      margin: 0;
+      padding: 6px 10px 10px;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+      background: rgba(255,255,255,.08);
+    }
+    body[data-theme="dark"] ul.lessonList{ background: rgba(11,15,25,.08); }
+
+    button.lessonBtn{
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.10);
+      color: inherit;
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 12px;
+      text-align: left;
+      transition: .15s ease;
+      line-height: 1.25;
+    }
+    body[data-theme="dark"] button.lessonBtn{
+      border: 1px solid rgba(11,15,25,.35);
+      background: rgba(11,15,25,.10);
+    }
+    button.lessonBtn:hover{
+      filter: brightness(1.02);
+      outline: 2px solid rgba(255,255,255,.18);
+      outline-offset: 0;
+    }
+    body[data-theme="dark"] button.lessonBtn:hover{
+      outline: 2px solid rgba(11,15,25,.18);
+    }
+
+    button.lessonBtn.active{
+      background: var(--activeBg);
+      color: var(--activeText);
+      border-color: transparent;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.14);
+    }
+    body[data-theme="dark"] button.lessonBtn.active{
+      box-shadow: 0 0 0 3px rgba(11,15,25,.12);
+    }
+
+    /* Mobile drawer */
+    .menuToggle{ display:none; }
+    .overlay{
+      display:none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 50;
+    }
+
+    @media (max-width: 980px){
+      .app{ grid-template-columns: 1fr; }
+      aside.sidebar{
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        width: min(92vw, 420px);
+        transform: translateX(-105%);
+        transition: transform .2s ease;
+        z-index: 60;
+      }
+      aside.sidebar.open{ transform: translateX(0); }
+      .menuToggle{ display: inline-flex; }
+      .overlay.show{ display:block; }
+    }
+
+    /* ===== Modal de busca (centralizado) ===== */
+    .modalOverlay{
+      display:none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 80;
+    }
+    .modalOverlay.show{ display:block; }
+
+    .modalDialog{
+      display:none;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      width: min(92vw, 820px);
+      max-height: min(82vh, 720px);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadowStrong);
+      z-index: 90;
+      overflow: hidden;
+    }
+    .modalDialog.show{
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .modalHeaderLeft{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .modalHeaderLeft strong{
+      font-size: 12px;
+      white-space: nowrap;
+      font-weight: 950;
+    }
+    .modalSearch{
+      width: min(52vw, 440px);
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+      outline: none;
+    }
+    .modalSearch:focus{
+      border-color: var(--hoverBorder);
+      box-shadow: 0 0 0 3px rgba(0,0,0,.08);
+    }
+    body[data-theme="dark"] .modalSearch:focus{
+      box-shadow: 0 0 0 3px rgba(255,255,255,.10);
+    }
+
+    .modalHeaderRight{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+    .modalCount{
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .modalBody{
+      background: var(--panel2);
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .resultsList{
+      margin: 0;
+      padding: 6px;
+      list-style: none;
+      display:grid;
+      gap: 6px;
+    }
+    .resultBtn{
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 12px;
+      text-align: left;
+      transition: .15s ease;
+      line-height: 1.25;
+    }
+    .resultBtn:hover{
+      background: var(--hoverBg);
+      border-color: var(--hoverBorder);
+    }
+    .resultMeta{
+      display:block;
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .resultTag{
+      display:inline-block;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.04);
+      margin-right: 8px;
+    }
+
+    /* Mensagem quando não há templates cadastrados */
+    .emptyNote{
+      margin: 10px 6px 0;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      background: linear-gradient(180deg, var(--panel2), rgba(0,0,0,0));
+    }
+    .emptyNote strong{ color: var(--text); }
+  </style>
+</head>
+
+<!-- Regra: iniciar sempre no tema claro -->
+<body data-theme="light">
+  <!-- Overlay do menu (mobile) -->
+  <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="Menu de categorias">
+      <div class="brand">
+        <div>
+          <h1>Biblioteca de Aulas</h1>
+          <small>Menu em árvore • Busca em modal • Tema claro/escuro</small>
+        </div>
+        <div class="brandActions">
+          <button class="btn" id="homeBtn" type="button" title="Voltar ao estado inicial">Início</button>
+          <button class="btn" id="themeBtn" type="button" title="Alternar tema">Tema</button>
+        </div>
+      </div>
+
+      <div class="searchBox">
+        <div class="searchRow">
+          <input id="search" type="search" placeholder="Buscar categoria ou aula..." autocomplete="off" />
+          <button class="btn" id="clearSearch" type="button" title="Limpar busca">Limpar</button>
+          <button class="btn btnPrimary" id="openSearch" type="button" title="Abrir resultados">Buscar</button>
+        </div>
+
+        <div class="hintRow">
+          <span>Dica: a busca ignora acentos.</span>
+          <span id="statsHint">0 categorias</span>
+        </div>
+      </div>
+
+      <nav id="tree" aria-label="Árvore de conteúdo"></nav>
+
+      <div class="emptyNote" id="emptyNote" hidden>
+        <strong>Nenhuma categoria cadastrada.</strong><br/>
+        Adicione seus <code>&lt;template&gt;</code> dentro de <code>#templates</code> para preencher o menu.
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <button class="btn menuToggle" id="menuToggle" type="button" aria-label="Abrir/fechar menu">Menu</button>
+        <div class="titles">
+          <h2 id="currentTitle">Início</h2>
+          <p id="currentDesc">Selecione uma categoria e uma aula no menu lateral para iniciar.</p>
+        </div>
+      </div>
+
+      <div class="playerWrap">
+        <div class="playerCard">
+          <div class="aspect">
+            <iframe
+              id="player"
+              title="Reprodutor de Vídeo"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              allowfullscreen
+              allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+              src=""
+            ></iframe>
+          </div>
+
+          <div class="placeholder" id="placeholder">
+            <div>
+              <h3>Nenhum vídeo selecionado</h3>
+              <p>
+                Use o menu para abrir uma categoria e escolher uma aula.
+                Você também pode pesquisar pelo nome da categoria ou da aula.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lessonPanel">
+        <div class="lessonPanelHeader">
+          <h3 id="panelTitle">Aulas</h3>
+          <div class="lessonCount" id="panelCount">0 aulas</div>
+        </div>
+        <div class="lessonChips" id="chips"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de resultados da busca (centralizado) -->
+  <div class="modalOverlay" id="searchOverlay" aria-hidden="true"></div>
+
+  <section class="modalDialog" id="searchModal" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle">
+    <div class="modalHeader">
+      <div class="modalHeaderLeft">
+        <strong id="searchModalTitle">Resultados da busca</strong>
+        <input id="modalSearch" class="modalSearch" type="search" placeholder="Refinar busca..." autocomplete="off" />
+      </div>
+
+      <div class="modalHeaderRight">
+        <span class="modalCount" id="modalResultsCount">0</span>
+        <button class="btn" id="closeSearchModal" type="button">Fechar</button>
+      </div>
+    </div>
+
+    <div class="modalBody">
+      <ul class="resultsList" id="modalResultsList"></ul>
+    </div>
+  </section>
+
+  <!-- =========================================================
+       ÁREA DOS TEMPLATES (COLE AQUI)
+       ---------------------------------------------------------
+       IMPORTANTE (para NÃO ficar genérico):
+       - Esta página já inclui um dicionário CATEGORY_TITLES com
+         títulos prontos para IDs conhecidos (card-1...card-31,
+         health-mental, health-physical).
+       - Você pode (opcionalmente) sobrescrever o título no
+         próprio template usando data-title="...".
+
+       FORMATO RECOMENDADO:
+       <template id="card-1" data-title="Revoluções Industriais (1ª a 4ª)">
+         <p class="desc">Descrição...</p>
+         <button class="video-item" data-src="https://...">Aula 1</button>
+         <button class="video-item" data-src="https://...">Aula 2</button>
+       </template>
+
+       O script lê:
+       - .desc (descrição)
+       - button.video-item[data-src] (aulas)
+       ========================================================= -->
+  <div id="templates" hidden>
+    <!-- TODOS OS TEMPLATES PERMANECEM EXATAMENTE IGUAIS -->
+  <template id="card-1">
+    <p class="desc">
+      Série de aulas que apresenta a 1ª, 2ª, 3ª e 4ª Revolução Industrial, conectando contexto histórico,
+      tecnologias-chave e os principais impactos sociais e econômicos de cada fase.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/a7hmETTb#1q7x_mvDsHq5FJ8SniGY8mAJUG8u-ZomIFuCpswFkBg">
+              1ª Revolução Industrial
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/DuxlFAab#1rdVy2E29gYbu_MvuWeir-MfFNMlUSyWccIZCENv4k8">
+              2ª Revolução Industrial
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/K7ZAURZK#eMUb5IC1GdxJJBWmbF2LdqSFnLjyxDYgQjcxggKRvAo">
+              3ª Revolução Industrial
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/njwlTBxI#YLSn7yyMOzfppRJPBDIm03kXqOMftYLR_xy9FGOEVBM">
+              4ª Revolução Industrial
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-2">
+    <p class="desc">
+      Sequência de aulas que introduz a informática, apresenta a evolução da computação, diferencia tipos de
+      computadores e explora os principais sistemas operacionais usados no dia a dia.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/u2wSFIzS#BLFXOunW3e5khzavtQ7vG3gedSIcvHR2Bw19C5w2PP4">
+              Introdução à Informática
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/brRxHCxL#iQaRnRna9WRiZfiozFGmivQZTxL0NbJElzJqDOWIpJc">
+              Evolução da Computação
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/XnwnWbQD#pTtcxFcd49aQCNvTI09ftI5lFrg1TErKz-Ag9CM_czU">
+              Tipos de Computadores
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/zu5Txarb#p2Y1E58_hGSGVXvkiFB507Qne7Z3SAyZjKte_zFtQzc">
+              Sistemas Operacionais
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <!-- NOVO TEMPLATE DO CARD 31 -->
+  <template id="card-31">
+    <p class="desc">
+      Trilha introdutória sobre Sistemas de Informação e Dados, apresentando conceitos essenciais de como
+      dados são organizados, representados e armazenados, além de técnicas práticas de organização no dia a dia.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/zr5zHKwT#pmchhfY9YI7uxHvTv35kd1kxej7-w9r4dJeedEhcPr8">
+              Sistemas de Informação
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/HywiFaqT#3RjJaz2G08GGZ-O8DxiNawgVqBccr9ucR4QH2S_pMh8">
+              Fundamentos da Organização, Representação e Armazenamento de Dados
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/yiY0RaBY#siXPeNC_LPCUS5_kXsZES3RDkdMtY8IKHxVd-53xKPM">
+              Ténicas de Organização de Dados
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-3">
+    <p class="desc">
+      Trilha focada na Arquitetura de Computadores, apresentando a estrutura interna,
+      componentes básicos, a lógica dos múltiplos dos bits e como a CPU processa dados por meio de algoritmos.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/LuJw0SQB#aUNV7dd4E4Hn9oBSSNFRwe7wt-SJl0Yohh3-l_Dhwxo">
+              Estrutura e Componentes Internos do Computador
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/i2hX3ayZ#etIM1FYKa63rYY-oq4nDeSsKqeYsI28bmbcsluTZATE">
+              Os múltiplos dos bits
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/LnQ1gQqL#gRp0ntHbrOWeLFsf1OXxxNNOjanuubj4PX_hfNBXbuE">
+              Como é o Processamento de Dados na CPU
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/qr5iSI5b#FdFTxKsDtr3GCSkMP0U-Dh3QbaObO0l3YY_7GriiqQA">
+              Algoritmos
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-4">
+    <p class="desc">
+      Conjunto de aulas sobre Serviços e Ambientes Tecnológicos, explorando servidores, data centers
+      e os modelos de computação em nuvem que sustentam a infraestrutura digital moderna (cloud, fog e edge).
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/TjpTRA4S#NaSVBP0i73xp6apK3wJYCEeoOI8izjUlSQgpEsVuYrw">
+              Servidores e Data Centers
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Hy5EFQBa#-pi36Fj2NRBRljjtOLH_9eq1x9zuWbMv6wwPUyCtuAg">
+              Cloud Computing
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/KmAkQagI#l6-6eXdjufTiW_La9XZPAfwqJxTJ46QKZ68oUmwiXlM">
+              Fog Computing
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/riAlTB7D#20YaCJj09vb2zHlOqg_WZBzxt9nXYYxbTTfcnvU0aEA">
+              Edge Computing
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-5">
+    <p class="desc">
+      Trilha interdisciplinar de STEM que conecta matemática, física, química e biologia à tecnologia,
+      mostrando como esses conhecimentos fundamentam a era digital e suas inovações.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/iv4RmCRC#6bfRkZbFhBRKHz-xOfmRDLEVLdavSFZwse8PCoMMSVo">
+              STEM
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/rmAynDgT#WJXsQf0PKj2jbVyMYIMdOLGZKpQCJN_Vg49N0GBw7Nw">
+              Matemática Essencial da Era Digital
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/LyIgGD5A#fbIG7oM6w1fmI8wjwwalks24-a40nOlVkrfkS4rX_Bk">
+              A Transformada de Fourier na Era Digital
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/j7RjkSrL#kLsKN3V09r7kkDAcZntahHx-3RpGvqWr1Rvc1XnxsY8">
+              Diferenças entre Física Clássica e Quântica
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/f2whlb6C#6Y5fHCBlWiZkZIUQXBBaVO7j_f2-EXCM-_0g_s2M4bE">
+              Física Quântica
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/f7I33YwL#IJGGpINI3N6B8TbO1XVxoU4qhfWyrZA1hHyyHnSR76o">
+              A Relação Entre a Química e a Tecnologia
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/2yolALhI#b4A1q4MhN2vY1OYVd40Mt1716vLgx3JwHXHnZALEhWU">
+              A Relação Entre a Biologia e a Tecnologia
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-6">
+    <p class="desc">
+      Introdução à história das redes de comunicação, das primeiras conexões cabeadas às gerações móveis (1G, 2G, 3G, 4G e 5G),
+      mostrando como a conectividade moldou a sociedade digital.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/vjonQYja#aJNe3Yo3fQIUbMCvA7JTiR4_yGGHEXNeILsTUSKPm-0">
+              Criação e Evolução das Redes de Internet
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/2jRQQRhZ#qETYZyRvo_-vVTS-Pcc4nP-_0_gQADsqeSPw5ipLCQA">
+              Rede 1G
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/2nomzIJQ#32uqcO-EJjOYNmQhFv9dUmvD77XHVXo14ytAzha1_es">
+              Rede 2G
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/O7pnUKzJ#841egxqQON1217_8aUCvRnzQ-ZcG_gcKqTLXLG_W_x0">
+              Rede 3G
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/CjxnjB7K#5Lt2eyJGEQ1R68ysZcBy08pVZiz2mldbMxaeGZObTks">
+              Rede 4G
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/OrYnnBKS#rBM0NHvBjoYUaA103sGM1pJz4mj5KdyGyHL2ctW3avI">
+              Rede 5G
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/DqJizDrD#GNDwqFh16SXZOWG6VhG06D1uhXvvuJQGBT7TZeXV00o">
+              Conectividade Global por Satélites
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-7">
+    <p class="desc">
+      Visão geral sobre padrões de conexão sem fio, como Wi-Fi, Bluetooth e outras tecnologias wireless, explorando frequências,
+      alcance, desempenho e aplicações em redes domésticas e ambientes inteligentes.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/T3ZEwTYK#i6YhtAoZHlYALXPTe6FaHegxjJ-xPqnwjrXd7-ATWmU">
+              Wi-Fi
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/PuAEnIwa#lnttHHck-_4YRbqNEHnVnlcNl8y5WNhLagiTlvY5xWg">
+              Bluetooth
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/XnYw3RST#XTCz_Ew5NMd_uZ09XDKpyyhp3TR-K8V-gdqlYSkxnaE">
+              Bluetooth Low Energy (BLE)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/HjJF1RpT#tdvBgJKuKH8zYpREMoBohFXkwVzfY0kDJ2QDIXzUjXY">
+              Li-Fi
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/6rBVXZaD#ppm6-RwBMG5LvfZS2uVvQEFiSLvRNe8sVxSjRIIJSKo">
+              Thread
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/X2xUhYjK#Rg69BDpUk3XH4kC_oczmEgVBPtT-WJ8BqO_doV7UhD0">
+              Ultra Wideband (UWB)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/ejok2bgB#H0TfrHzR88JQ7qKYEKrSgmYU1t2E4Ne6g7fRYmR1Si8">
+              Zigbee
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-8">
+    <p class="desc">
+      Panorama de padrões de comunicação por proximidade, como infravermelho, GPS, NFC e RFID, destacando uso em localização,
+      pagamentos, identificação e Internet das Coisas.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/vzxU3QaQ#Tsduf73KCZlliCYBtC60pASlcXjJe9m1MyqF6YPCQMo">
+              Infravermelho (IrDA)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/um4B2JCC#Aqegw4wftruEleS2qpGfWyNyZ8SmzORYa7cwQnbateQ">
+              GPS
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Oi5HBQwS#_K3CWTnaXTaec35g5ZERYk2RpyoEs3ny78vMWmRKe7c">
+              NFC
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/KjQ3hRwB#Xm9HDpn8q169TlwvUCp8eMRRwshNJwousRCeNvk8RCM">
+              RFID
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-9">
+    <p class="desc">
+      Estudo dos principais padrões visuais de dados como códigos de barras e códigos bidimensionais, analisando usos,
+      vantagens e leitura em sistemas digitais.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/qnJkyRQb#QRJSaUzL56quGTWAgHYukmEitUfCRMSgVX8OQ4rMAAg">
+              Código de Barras
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/ujoD3STI#vGHp-oGsyHm3SRBKh-dlEKmC6IMJKj6sLcrsfNXx8PM">
+              QR Code
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/ProhyayY#gChqsR3XOdT0FKi1vjLAenpDZlpTbSuLirOLmBighlI">
+              PDF417
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/3roiBTRR#xnwAoDNypD-3Npi8aKsXHp0CTTfblJZQOSYferIm5yQ">
+              Data Matrix
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-10">
+    <p class="desc">
+      Trilha sobre navegadores, infraestrutura global de redes digitais, HTTP/HTTPS e DNS, explicando o que acontece
+      "por trás do clique" ao acessar sites e serviços online.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/LqBlkQSb#UEQb5QdkSyBVFr5HsYA3CLj6daPoj4eWvVQ_rbVkJyw">
+              Infraestrutura Global e Tipos de Redes Digitais
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/nzBTQTrT#mOm2PlUhPEou4Jz8bkcy_V61UNy1pP7-ID1ixmgLND4">
+              Navegadores de Internet (browsers)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/GuwUjA7L#rWn93Mhp2CYqroIpta3sVBCuQoY5D15BP18BUSApzQc">
+              HTTP e HTTPS
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/LmJTHYYI#LtwYZMwMSXXWkzbmjURWVqPYe4kUZRMe1M5ztHw-17c">
+              DNS
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-11">
+    <p class="desc">
+      Introdução à automação residencial e casas inteligentes, abordando dispositivos conectados, assistentes virtuais,
+      hubs de automação e o papel das redes domésticas na integração de tudo isso.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/XiZmDAYJ#E01DrTrlLBeubXTpxo8pGioCFeB727-M7mtv8sPsNFw">
+              Automação Residencial - Nível 1
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/C3oXkSLD#7Ux26Ellh8dy9x1u7VYjyypMmLOgsnI5ANcydrkRKrs">
+              Automação Residencial - Nível 2
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/2z4SmazT#zkHllU7czVfJy65elX6n_3Zert6qRNz7v_pfxYvRTsM">
+              Automação Residencial - Nível 3
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-12">
+    <p class="desc">
+      Trilha focada em meios de armazenamento de dados, abordando HDs, SSDs, pen drives, cartões de memória
+      e soluções em nuvem, destacando conceitos de capacidade, velocidade, segurança e backup.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/m2ZHATha#kTjnkIaEm2nolDJUAIbFXRQsq6lQgcwi_MWh3Ac7hGY">
+              Cartões SD-MicroSD
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/7roHgDAR#WLe4B7m5XMHQJa5xjPCoyCOaZTFwT6shjvU0jyeD_wQ">
+              HD Externo
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/234hwDCT#T4XNCYpnQ1aj7UujwzUDArAG62kX0DrIsx13xwUTHow">
+              Pen Drives
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-13">
+    <p class="desc">
+      Trilha dedicada aos principais dispositivos de rede, como modems, roteadores, switches, access points
+      e firewalls, explicando o papel de cada um na construção de uma infraestrutura conectada.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/K3wTEIiD#1WX16slzTErWlq5PH4oVoNqTJAjwG4k95lBxWT-wGLE">
+              Roteadores Wi-Fi
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Tio3wRzA#PIU22merctcdS0vB4HJI6hu7iSdGsc0R8BH2w5CieBk">
+              Roteador Mesh
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-14">
+    <p class="desc">
+      Trilha que apresenta o conjunto de equipamentos usados em ambientes de home office, incluindo computadores,
+      monitores, periféricos, webcams, headsets e impressoras, com foco em ergonomia e produtividade.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/LuBx2A6C#Z-scQotvly7arpwju9fP7EIimJCQ4plekZgNq7KD41E">
+              Impressoras
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/mu5WSRaJ#TzOVpmiPl34wXenFcBNmjvHd0LTEP1t6Ka35mzxZoKI">
+              Impressoras Multifuncionais
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/HyRx0ayZ#Ot_U-ZEPidltKOHyCPVKAHKxpenFiOpr-eORGFpHn-4">
+              Projetores Domésticos
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/3ngiFAJC#8CluEUZu3V6_7rNVOUri4dp6T7V1Ki2opBmS2s5_uDs">
+              Mesa Digitalizadora
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/rvAjlQxT#NQUzeVDjynL85xiOvsM97uQuuVB-iy6iqZv0t2BfYG0">
+              Scanners
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/anRgzYqK#D0RlaqEz40D85zeSAqdJGwo_NAHGw0pm4AyBU7-82qQ">
+              Webcam
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-15">
+    <p class="desc">
+      Trilha voltada para o universo dos dispositivos smart, como Smart TVs, smartglasses, smartphones
+      e smartwatches, explorando conectividade, recursos inteligentes e integração com outros dispositivos.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/ProDVQhA#LoBTqzvk_hoJ7xoTaowVsxItS0tOBmvYPUn7cV5zvP8">
+              Smart TV
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/OzpU0CQA#gPCE4sYUuh9-GcF8LIiypN8xuTfV4FS_RCHq2BSSLm4">
+              Smartglasses
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/uuRADK6K#Ru9mUwRpup7ImlD2QAefb4sciA3ZAHC8oouZy_F-luQ">
+              Smartphones
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/K2pCEJqB#Y5K1Pj6fh-MsQnzzFeJYXhpDqYqItqtNR45rjLLknVU">
+              Smartwatches
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-16">
+    <p class="desc">
+      Trilha voltada para gadgets e acessórios tecnológicos, como controladores hápticos, drones, leitores digitais
+      e óculos de realidade virtual, que ampliam a experiência digital e imersiva do usuário.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/q2JDkZgY#oFo0X49Q0H8QSipNfgmutSxh6sDtjyOppwmvT16yE70">
+              Controladores Hápticos
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/q25U0SYD#Z4jiZqxvqwQoNSexgTBbjJFnsKv9dShwvMGTgRodazk">
+              Drones
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/OvJRkbqD#6qeoGm0lb73DW0356MIa7J3xeTmAija0HmxBqpUuCqQ">
+              Kindle
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/biYmjKiQ#D9AYfVvaXq-C0GPeKNvAw9rRrgpH1FgCgwMRlhTt2vQ">
+              Óculos de Realidade Virtual
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-17">
+    <p class="desc">
+      Trilha que explora diferentes paradigmas e escalas de computação: da computação clássica e supercomputadores
+      às abordagens fotônica, neuromórfica, biológica, adiabática e quântica, destacando usos, potencialidades
+      e limites de cada modelo.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/rqJzDaxa#vSvzZFOHaE_ViSp4uGJNGmujKcWrg1iRSTPEwF5K270">
+              Computação Clássica
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/qy4B3D4R#NTU6GC3-uyH1JDD-G3iirpVZ_QKkWa6cYT9p7sIYStc">
+              Supercomputadores
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/O352SLJI#zihR2l89yWkh8UXKfYp_kZSE64O7AG29KYRVFmBhNck">
+              Computação Fotônica
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/rr5W3BJL#CPTlgx0QzSi7ZiftEyJaEjekX2W1aCFiB8iVSdbKZg4">
+              Computação Neuromórfica
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/XzJS3C7Y#OsTdeSy0OyDJFwZGgGHGy4LBS3XFElnDpFQF3bhe0Ag">
+              Computação Biológica
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/quRlBIIQ#bp8PjoxkOiD0TwLksujGgwAoBffpkFAazLG8DB_RYNE">
+              Computação Adiabática
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/fz5Cna6Y#mFBLCOeoSqpYidqZmzDBvCP7aO3CDtz2xh8cFVflVyM">
+              Computação Quântica
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-18">
+    <p class="desc">
+      Trilha que apresenta a evolução da Web e da Internet, passando pelas fases Web 1.0, 2.0 e 3.0,
+      e discutindo o papel do movimento Open Source (Código Aberto) na construção da infraestrutura digital
+      colaborativa que sustenta a web contemporânea.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/yzIHCBLK#zT115ltjIQeBywhF0BYkvzQc-IKg6tn5G7WlRcT73HE">
+              Web 1.0
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/X7wi3JLL#6j6n0vKs1ghKPvIhrC191P9W7DIC7rdlsqRH_b3UaOo">
+              Web 2.0
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/vzpzSIrR#gaLgGrXwZZU-LvIRrG-e-Bidm7Hyt5CPjJIh8I0bmeY">
+              Web 3.0
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/72J33RgQ#4kbZEGKmwtu7KKlslxQhqrlpGzZWIxyG_vjlOmGK5pM">
+              Open Source (Código Aberto)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/ezomySRK#u7_uI6E2Nrd5i4FMqfULdWu0ED5dVcuaPmAZNv27ujo">
+              Ameaças Virtuais
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-19">
+    <p class="desc">
+      Trilha dedicada ao estudo da Inteligência Artificial contemporânea em suas diferentes manifestações:
+      fundamentos técnicos, estruturas, empatia simulada, computação preditiva, riscos reais, IA generativa
+      e o novo paradigma da IA Agêntica. Uma visão ampla e moderna da tecnologia que está redefinindo
+      o futuro da computação.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/uvYGBQZQ#c-I5MNRpXLePt6COsgmbWFixEirQTyzgZkpAQxsLFQs">
+              Inteligência Artificial
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/WuQHTIAL#EM7Vo0aigE4lXtM4g7sGTemh1jB-LklmPMfCP9F6zYs">
+              Tipos e Estrutura da Inteligência Artificial
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/zrggmabS#mU6Twossh1M6vkTaYLf3PGaDzPqgK9Y6BYKPM2OhjFY">
+              Empatia Artificial
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/7v4XSZhA#FM4NqYByJ_p5bUyGTTxCjudZuSl0jBEK0GXhzfRYA4M">
+              Computação Preditiva
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/GrRhgABD#VP7vvk-rW3pXUDCpgUl23srExHo07dlWPEC_5E3itJk">
+              Perigos Reais da Inteligência Artificial
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/zypBnYaQ#5cGul0HjM83mBaWmIVoaUtf7zLne6dyycwiWooB55lo">
+              Inteligência Artificial Generativa
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/7vpC3ZZQ#Hh5ninSUzsYzcrKBF4u9zicgb2Llu9mqxIYrTOOmPks">
+              Inteligência Artificial Agêntica
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-20">
+    <p class="desc">
+      Visão panorâmica das tecnologias emergentes que estão ganhando espaço na economia digital, como novas arquiteturas
+      de computação, biotecnologia, sistemas autônomos, novas interfaces e soluções que ainda estão saindo do laboratório
+      para o mundo real.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/vzIAUDZS#uGTVCPn-rA4pFUKk1mYYInkGBFQqCR4pUhzf7yYXeOA">
+              Blockchain
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/C3ZXjQjA#OCgT9kzjFgCUjhregRJ0v2n0rvH9_oyclPdwKTGpCsY">
+              Gêmeos Digitais
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/niYQFIAY#mvPkrf9iwFgvsvVpek4jGpxib0PH0fADGH4qWFkH468">
+              Internet das Coisas (IoT)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/DqoQWTAK#uLDPzuNX9m5T2B6FqKnf25hQZHOb3XtB5lo6SS6L-JQ">
+              Inteligência Artificial das Coisas (AIoT)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/zjB1xJoR#3syCA3LnvPF0MbOsRSHpm4X99jpKakUYyaYq1-ZpzDg">
+              Metamateriais
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/3yZRjQiT#Npcbb9EBzUU_gnxXSCQLB04B7eLb3_VVGciOCZ5pD9M">
+              Nanotecnologia
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/myx0HDZZ#5rSowQJmLj8GuJES992QvdNEw237AzCdFBWzAUQcuUU">
+              Plataformas de Streaming
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-21">
+    <p class="desc">
+      Introdução às tecnologias imersivas, como Realidade Virtual (VR), Realidade Aumentada (AR), Realidade Háptica e Realidade Mista (MR),
+      explorando aplicações em educação, entretenimento, indústria, treinamento e simulações, além do debate sobre metaverso.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/anR2HYpa#zfaJp3teSKW6eBIord_HyTagRuUpi-9wHRlVs71ccrw">
+              Realidade Virtual (VR)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/nmZgAYBI#dqW64nA8qsjEAhH_dwfNqxCnKbY27rgfLXWuCsIBAz8">
+              Realidade Aumentada (AR)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/vjZWwTQb#uLlWbBz4FIwe1v19A_6fu20PR-A_zHCYR34nKc9H-8E">
+              Realidade Háptica
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/PnJlXKYS#x99vXO6mw_9Frvw837OGvV5ePYbvLwqjC3ViNTyfrtY">
+              Realidade Mista (MR)
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Wj5lRAaK#86xqeg4oaNDltFR48M6ddte83o6kUqSG9-xtoM5muTA">
+              Metaverso
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-22">
+    <p class="desc">
+      Trilha voltada para o estudo de tendências tecnológicas e socioculturais: futuro do trabalho, automação,
+      impacto da IA em diferentes setores, economia de dados, plataformas digitais, mudanças de comportamento
+      e cenários possíveis para as próximas décadas.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/KzxEUIrQ#vvuoQURltN7Uv1Eq_GaBY2kugx9sN3i9dngg7_iTmFc">
+              Aluguel Inteligente
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/KqZwCTSI#5kEmT_vhdI3MGn_cPQwBPf7JjWjmqN58jKH-jNZjiuI">
+              Automação da Confiança
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/665mEQxK#DefF3FjtaHBj6hfeEoJVCuvKPExqy0IxFnXmHzq_SvE">
+              Computação Ubíqua
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Pz4j3QwB#kdjf2A-q5IybmnxQ3frQ1jYG7N1q2La52_a0df1cb-I">
+              Cidades Inteligentes
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-23">
+    <p class="desc">
+      Trilha dedicada à Robótica e aos Sistemas Autônomos, explorando desde conceitos fundamentais, tipos de robôs e sensores
+      até aplicações avançadas com Inteligência Artificial, Aprendizado de Máquina e ambientes totalmente automatizados
+      como as Dark Factories.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/bvgjkS6S#uMOSwAiax8en_YIfDsQpPNQxDvwj_-7jRa1cYQvo1VM">
+              Robôs - Conceitos Básicos e Aplicações
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/j7AmGAJJ#W8KUMArONcnS315_Uq_Y_MJexrKiAPSYAwLgFqYiE_4">
+              Tipos de Robôs
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Drog2IqD#iKbsz8kXRBYQZd5xLAY97szwDxyAGQNNbvjrUVmc_Pc">
+              Classificações da Robótica
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Ou4GEbqL#vpfQHx2K5-h1zaDc9lJg_cmJSKFsDoilNWpN3-lAVoA">
+              Cobots
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/yzRTAIzR#7-kLgZOc3Oovk8fM6rZUW2ZXcPQ1xZ730CpLrlXdyhw">
+              Sensores e Atuadores
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/y3Y13TBB#xzvNNWsvZBzzZGk7lBR-6eQJu8ZZqmErlWwB5bR38ZI">
+              Inteligência Artificial na Robótica
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/PiABhApJ#XWk9TVdmMS-1jNRVI4UL3jwwO3UmVk4Y7jY65XtKZ_0">
+              Aprendizado de Máquina para Robôs
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/2voAhTIa#5NQ-ijqnF1xJhhBHciVWUMvkMdRskpm_7YnvVGM6AkE">
+              Dark Factory
+            </button>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-24">
+    <p class="desc">
+      Trilha que introduz os fundamentos da Economia Digital, abordando a desmaterialização econômica, o PIB Digital,
+      a economia do conhecimento, cursos online, criptografia, criptomoedas e a nova arquitetura financeira baseada
+      em tokenização, stablecoins e smart contracts.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/emomDDgK#QqWkLXF_wTykqapOnY1buLz18p5K8Cm3kYiGWlINMaE">
+              Desmaterialização Econômica
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Wy410AbD#lcQiDgyVVdlcH5218FFLCOBuJYm-G5LUqHmMYxmFozQ">
+              PIB Digital
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/mr5lkQrK#mcC2jR-02ZydfSIeu0NGwy4YkyNnGlnp4EheBPZj7eY">
+              Economia do Conhecimento e Cursos Online
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/GuZkhbZY#34IHQopn9KtHHvdvuicCECNf5sfPSeNnPPHiZB73gPY">
+              Economia Digital
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/HuRBnBhA#ZngXlWrGLBFdegjhGY9OenwoRanzBemwl2TI1yBiw14">
+              Criptografia
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/2mZHmRzS#blZt0h3CFr6tERnfbtj35cVPMCWTNZ8_HOZx_PXruFg">
+              Criptomoedas
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/KjYnjJ6b#EEOtolgFLkj2crVbFaFJRDl3XkyhaFCfYHhbGwF2QuM">
+              Tokenização, Stablecoins e a Nova Arquitetura Financeira
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/eqpn2LbZ#SMJQJuAEs7K0Z_XCpEMsZKSHAzUFeVMXYKNLUr1wLSg">
+              Smart Contracts
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-25">
+    <p class="desc">
+      Trilha focada nas novas formas de finanças e serviços digitais: fintechs, bancos digitais,
+      carteiras digitais, superapps, marketplaces, NFTs e tokenização como base de novos modelos
+      econômicos emergentes e ecossistemas de plataforma.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/fuhwHTaT#oEYwcQ1QWwP359cRIh9fCHUVvahV9Y4ZZvu5173Rszw">
+              Fintechs e Bancos Digitais
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/azRFiCoA#GA0StZpIbXjhXbnRPbM5ix6deIXm2vEPTK-tMEQGPiQ">
+              Carteiras Digitais
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/7uY3BJ4Y#n9t9RReM94aQHcaiyKSGf6PKeZ5hNKGZAWwnqk1ayNA">
+              SuperApps
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/uzhUnCQC#_8koL8pX4Rh85yJep-aUbq1UV34CP19glg9mhMYrgAI">
+              Marketplaces
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/W2ITFThK#C1oOArhRVXhhHyzux0Hojg5XBBoqga33Bk3sStdTAOE">
+              NFTs
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/v3xWhIJR#8_o8g3hiYli2NMpy-Y9b_BSlLQctLfpWUAaTNG8oK8s">
+              Tokenização
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-26">
+    <p class="desc">
+      Trilha que discute os impactos da Economia Digital e da automação no mercado de trabalho, na sociedade
+      e na educação, explorando temas como Gig Economy, futuro do trabalho, inclusão digital, novas desigualdades,
+      requalificação profissional e profissões do futuro.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/umhR0aAB#E-DA1l1H76EvZXjWvTBlmmAgBReDmbPgGF5SB_fPtsk">
+              Gig Economy
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/yvYUCJqI#ZHK1Cc5gDeEUaz-yo8ZQIdl3Wjsp5HJD2jj5cVMDvtY">
+              Automação, IA e a Reinvenção do Trabalho
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/r6h13JwR#Fm-HrfCehiG-X0rLybPSwne-9XYIYc9gkQoiEZkKVdk">
+              Automação, Emprego e o Futuro do Trabalho no Brasil
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/S6hzDRRZ#pTMkwJ9zmgw7D0mGk96EXUbU7rqFYtUxo1nx-1ISoAY">
+              Inclusão Digital e A Nova Desigualdade de Classes
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/e6gnFYpR#DNlAXnsPsLbJ9SfI4lJt6cyXk4RUaF7vnW6d84Yk-uQ">
+              Educação Tecnológica e Requalificação na Era Digital
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Oz4RiAKQ#64kjfan575QVOvIAcBzwOT9TjU01jipUHB9YGRl-4ek">
+              Profissões do Futuro
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/irhEkaIZ#Z2LEKrDS9_CyEnVkv6KDjAlSjF-Sl7lmHa43s3vrxtw">
+              Agrotech
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-27">
+    <p class="desc">
+      Trilha dedicada à Fabricação Aditiva, explorando os princípios da impressão 3D, suas aplicações na construção civil
+      e os avanços rumo à chamada impressão 4D, em que materiais e estruturas podem responder dinamicamente ao ambiente.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/2rgTRCrK#UY1ULD5WrdgX6SFXrFr_sedhQjlbXCrQPBJK63GVv-k">
+              Impressão 3D
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/TrxSWYAR#MpX4UdWyUtCUbqSITbfEdgzEgCLdTX-LNsyW5rBSiTE">
+              Impressão 3D na Construção Civil
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/u3g0xQSa#51-ZjmDrgkeWsYnOqEdylYMpC7vl6754PZPsEcoNoNQ">
+              Impressão 4D
+            </button>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-28">
+    <p class="desc">
+      Trilha que discute o impacto da tecnologia nas formas de perceber o tempo, nas estruturas sociais,
+      nas dinâmicas de poder e nas relações humanas mediadas por redes digitais e plataformas.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/P2QDSb5I#yRid8L9-WnkLTb-nHb2lV4Yyi1xLN086NyOyjxDnwYg">
+              Bolhas Informacionais
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/yqpiASoJ#AZ2U5MsespV2DzvinLNrZVkVnPT0S41TS2AgBjtwH_k">
+              Como a Tecnologia Redefiniu a Percepção do Tempo Moderno
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/miQjFBIZ#mBPPNxWMxExAqnLvYUsU9JpqoL3dakZFVgrt57BEoKo">
+              Novas Estruturas Sociais na Era Tecnológica
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/zjwV0R5J#KtM5FHG2twsKnHAK-Y-X_zOpss4v_UDN9VsGyD2joAQ">
+              O Quinto Poder
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/y34llQYT#WhMO6PiRKVOsF50ZGhjLnomhn3qiBrsqUmV_-D9bABQ">
+              Paradoxo da Conexão
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/6zAG0ZQI#LOt4GoqrGeSxupWgKWRxkJyg5AbOA3vzbSZtnVwE4tU">
+              O Paradoxo Ambiental da Economia Digital
+            </button>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-29">
+    <p class="desc">
+      Trilha que apresenta diferentes correntes filosóficas e político-culturais relacionadas à tecnologia,
+      explorando visões críticas, utópicas, distópicas e alternativas sobre o papel dos sistemas digitais
+      na organização da vida contemporânea.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/GzQxUSZZ#CGUFJ_1oX5k5zRu1rXL3ZD5VMgmBHjns2Q-BQjyfDyU">
+              Tecnoautoritarismo
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/3uZwXTQB#38W4X4dVOxKTp9iri_ILicBTGuaXqTAXSCiUYBfsFLk">
+              Cyberpunk
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/uuxhARKb#TShQs5U72elpKrCTPegIZtZinjhx0knN-JzP1feBaME">
+              Cypherpunk
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/fqRk1LIQ#9WFvmlP0JNpNwzZiqNnEYU6nGlW-rnlqo1wTVKUY9II">
+              Dataísmo
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/b3AC3YYD#-AyMdSP2Z9XjzEFvXBwuyPqVwQOLdI-IRJHxSPE2oTc">
+              Transumanismo
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/ij5C1RyS#XkZt8XaMdkO6tRMtXdYPO0pBPn8AWdT7LMPxqtFMEBE">
+              Anarquismo Digital
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/SzBTSI4J#LdFJv7VqUoKyXyaL9HhR1uXeYkaruibiRrKEfP1xM6w">
+              Neo-Luddismo
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/LvwXlawK#_qsfH6H8YGrE1p3hVzUojnsy7yjukxKrHRojEx_xRDg">
+              Tecnogaianismo
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Gy4ARKqI#5b-K_KpFRYmaAtuisPpJJaymIO2TxzurINhk3oMGoqU">
+              Cibernética
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/fyhk2bxY#V1uDLtGlLCuskKQGEDmgUJyNn2uFkV3L0KKhzh24-Rg">
+              Singularidade Tecnológica
+            </button>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-30">
+    <p class="desc">
+      Trilha sobre movimentos culturais que emergem na interseção entre tecnologia, corpo, jogos, gênero e performance:
+      práticas de biohacking, cultura gamer, ludologia e tecnofeminismo como formas de reimaginar a relação humano-máquina.
+    </p>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+
+      <div class="video-list">
+        <h4>Aulas desta trilha</h4>
+        <ul>
+
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/H24zRaiD#GeLPXlgg7JsoXUQ6E1-k1ZbBARIdXs0FdCZxGnAX9fs">
+              Biohacking e Nootrópicos
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/7zgSHL6Q#QknoXPwlDFDpsLckGt13jyoC-a41YNKAlnKr_1c3VcQ">
+              Ludologia
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/aq5yEZxT#KHoKC_gh3wENTLWxqTBDpPFUiFwh_JC0cRI4VANdtI8">
+              Tecnofeminismo
+            </button>
+          </li>
+
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/SyImiTgQ#UAzy9EVPCxNNMl5kOpTExaqoaWX76JYuV-HCoafn87o">
+              Simbiose Homem-Máquina
+            </button>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </template>
+
+<template id="card-32">
+    <p class="desc">
+      <strong>Saúde Mental e Tecnologia:</strong> Explore os impactos psicológicos da tecnologia contemporânea, 
+      incluindo ansiedade, estresse digital, síndrome de burnout e distúrbios do sono associados ao uso excessivo 
+      de dispositivos digitais.
+    </p>
+    
+    <div class="health-stats">
+      <div class="stat-item">
+        <div class="stat-value">6</div>
+        <div class="stat-label">Aulas Disponíveis</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">120+</div>
+        <div class="stat-label">Minutos de Conteúdo</div>
+      </div>
+    </div>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas de Saúde Mental</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/63ASFYrI#_2HbE6W60mnNOKwqXHIBJdilZTvyM_jOEoUINtVbFVo">
+              Ansiedade e Estresse no Contexto Tecnológico
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/X7oEVASQ#gZGesqE4-nz-vodHAfVjU7vd-xLc_Y5Qx4tWHh9ndZU">
+              Cansaço Tecnológico
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/yqpRAZID#IFjGqFHLk_49YOQFafl-IeUJvgScj7xAXuzUNAv_uAU">
+              Distúrbios do Sono Associados à Tecnologia
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/fnBk2QQT#yXlBR-1FfRoBQ9fycmPkdFkbEFBQ9ewe5viv_HD8Z2c">
+              Estresse Pós-Traumático Associado com a Tecnologia
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/jroGDTQA#W6xEtUx1OY_qDgU9lLOnIaZMCBRuyE6nxMS1HpHJ1-U">
+              Síndrome de Burnout Digital
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/uvZCAQQC#ZTFe_vPV7L9MfsWLvTBKPC35kk4P6WTh6yeoa3Mzq9k">
+              Tecnologia e Saúde Mental
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-33">
+    <p class="desc">
+      <strong>Saúde Física e Tecnologia:</strong> Entenda os impactos físicos do uso prolongado de dispositivos 
+      digitais, incluindo distúrbios visuais, auditivos e lesões por esforço repetitivo (LER) associadas à 
+      interação constante com tecnologia.
+    </p>
+    
+    <div class="health-stats">
+      <div class="stat-item">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Aulas Disponíveis</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">60+</div>
+        <div class="stat-label">Minutos de Conteúdo</div>
+      </div>
+    </div>
+
+    <div class="video-layout">
+      <div class="video-player">
+        <iframe class="video-frame" src="" title="Reprodutor de Vídeo" loading="lazy" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      </div>
+      <div class="video-list">
+        <h4>Aulas de Saúde Física</h4>
+        <ul>
+          <li>
+            <button type="button" class="video-item active"
+              data-src="https://mega.nz/embed/7rIEDBBK#ZRCOTsMcU6o1kMDfZ20vA2DGvSYRoOLQwBH2-U0WdAE">
+              Distúrbios Auditivos Associados à Tecnologia
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/Dr4GGDII#i39HvD4893e3nqyywO1sd1e8UIgG88MBSXUNn_BFuBw">
+              Distúrbios Visuais Associados à Tecnologia
+            </button>
+          </li>
+          <li>
+            <button type="button" class="video-item"
+              data-src="https://mega.nz/embed/u7oDHIzS#8sscMoaQQ_glhAVJ3UKvRoH42SwhbKw6_ocV3JmIj8o">
+              Lesão por Esforço Repetitivo Associados à Tecnologia
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </template>
+  </div>
+
+  <script>
+    /**
+     * NOMES DAS SEÇÕES NO MENU (corrige "Trilha 1", etc.)
+     * Prioridade do título:
+     * 1) template.dataset.title (se você quiser sobrescrever)
+     * 2) CATEGORY_TITLES[id] (títulos por ID)
+     * 3) prettyTitleFromId(id) (fallback automático)
+     */
+    const CATEGORY_TITLES = {
+      "card-1":  "Revoluções Industriais (1ª a 4ª)",
+      "card-2":  "Introdução à Informática e Evolução da Computação",
+      "card-3":  "Arquitetura de Computadores",
+      "card-4":  "Serviços e Ambientes Tecnológicos (Cloud/Fog/Edge)",
+      "card-5":  "STEM e Fundamentos Científicos da Era Digital",
+      "card-6":  "Evolução das Redes (1G a 5G e Satélites)",
+      "card-7":  "Tecnologias Wireless (Wi-Fi, Bluetooth e afins)",
+      "card-8":  "Comunicação por Proximidade (GPS, NFC, RFID etc.)",
+      "card-9":  "Códigos e Padrões Visuais de Dados",
+      "card-10": "Navegadores e Infraestrutura da Web (HTTP/HTTPS/DNS)",
+      "card-11": "Automação Residencial e Casas Inteligentes",
+      "card-12": "Armazenamento de Dados (HD/SSD/Pen Drive/Nuvem)",
+      "card-13": "Dispositivos de Rede (Roteadores, Switches etc.)",
+      "card-14": "Equipamentos de Home Office e Produtividade",
+      "card-15": "Dispositivos Smart (TV/Glasses/Phones/Watches)",
+      "card-16": "Gadgets e Acessórios Tecnológicos",
+      "card-17": "Paradigmas de Computação (Clássica a Quântica)",
+      "card-18": "Evolução da Web (1.0–3.0) e Open Source",
+      "card-19": "Inteligência Artificial (Fundamentos a IA Agêntica)",
+      "card-20": "Tecnologias Emergentes (Blockchain, IoT e afins)",
+      "card-21": "Tecnologias Imersivas (VR/AR/MR/Háptica/Metaverso)",
+      "card-22": "Tendências Tecnológicas e Socioculturais",
+      "card-23": "Robótica e Sistemas Autônomos",
+      "card-24": "Economia Digital e Nova Arquitetura Financeira",
+      "card-25": "Finanças Digitais e Ecossistemas de Plataforma",
+      "card-26": "Trabalho, Automação e Educação na Era Digital",
+      "card-27": "Fabricação Aditiva (Impressão 3D/4D)",
+      "card-28": "Tecnologia, Tempo e Poder nas Redes",
+      "card-29": "Correntes Filosóficas e Políticas da Tecnologia",
+      "card-30": "Corpo, Jogos e Cultura Tech (Biohacking etc.)",
+      "card-31": "Sistemas de Informação e Dados",
+      "card-32": "Saúde Mental e Tecnologia",
+      "card-33": "Saúde Física e Tecnologia",
+    };
+
+    const els = {
+      sidebar: document.getElementById("sidebar"),
+      overlay: document.getElementById("overlay"),
+      menuToggle: document.getElementById("menuToggle"),
+
+      themeBtn: document.getElementById("themeBtn"),
+      homeBtn: document.getElementById("homeBtn"),
+
+      tree: document.getElementById("tree"),
+      search: document.getElementById("search"),
+      clearSearch: document.getElementById("clearSearch"),
+      openSearch: document.getElementById("openSearch"),
+      statsHint: document.getElementById("statsHint"),
+
+      player: document.getElementById("player"),
+      placeholder: document.getElementById("placeholder"),
+
+      currentTitle: document.getElementById("currentTitle"),
+      currentDesc: document.getElementById("currentDesc"),
+
+      panelTitle: document.getElementById("panelTitle"),
+      panelCount: document.getElementById("panelCount"),
+      chips: document.getElementById("chips"),
+
+      emptyNote: document.getElementById("emptyNote"),
+
+      // Modal busca
+      searchOverlay: document.getElementById("searchOverlay"),
+      searchModal: document.getElementById("searchModal"),
+      modalSearch: document.getElementById("modalSearch"),
+      closeSearchModal: document.getElementById("closeSearchModal"),
+      modalResultsList: document.getElementById("modalResultsList"),
+      modalResultsCount: document.getElementById("modalResultsCount"),
+    };
+
+    let DATA = [];
+    let SEARCH_INDEX = [];
+    let active = { catId: null, lessonIndex: null };
+
+    function normalize(s){
+      return (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    function tokenize(q){
+      return normalize(q).split(" ").filter(Boolean);
+    }
+    function cssEscape(value){
+      if(window.CSS && CSS.escape) return CSS.escape(value);
+      return String(value).replace(/["\\]/g, "\\$&");
+    }
+
+    function prettyTitleFromId(id){
+      // fallback (último recurso). Evita "Trilha 1" como padrão de UX.
+      const s = String(id || "").trim();
+      const m = s.match(/^card-(\d+)$/i);
+      if(m) return `Categoria ${m[1]}`;
+      return s
+        .replace(/[-_]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, ch => ch.toUpperCase());
+    }
+
+    function getCategoryTitleFromTemplate(tpl){
+      const id = tpl.id || "sem-id";
+
+      // 1) Sobrescrita explícita no próprio template
+      const explicit = (tpl.dataset && tpl.dataset.title && tpl.dataset.title.trim()) ? tpl.dataset.title.trim() : "";
+
+      // 2) Dicionário por ID (soluciona o "menu genérico" sem exigir data-title em todos)
+      const mapped = CATEGORY_TITLES[id] ? String(CATEGORY_TITLES[id]).trim() : "";
+
+      // 3) Fallback
+      const fallback = prettyTitleFromId(id);
+
+      const title = explicit || mapped || fallback;
+
+      // Se não houve explicit nem mapeamento e caiu em fallback, avisa no console
+      if(!explicit && !mapped){
+        console.warn(`[Biblioteca] Template "${id}" sem título definido. Sugestão: adicione data-title="" no <template> ou inclua em CATEGORY_TITLES.`);
+      }
+
+      return title;
+    }
+
+    /* ===========================
+       TEMPLATES -> DATA
+       =========================== */
+    function parseTemplates(){
+      const container = document.getElementById("templates");
+      const templates = Array.from(container.querySelectorAll("template"));
+
+      const categories = templates.map(tpl => {
+        const id = tpl.id || "sem-id";
+        const title = getCategoryTitleFromTemplate(tpl);
+
+        const frag = tpl.content.cloneNode(true);
+
+        const descEl = frag.querySelector(".desc");
+        const desc = descEl ? descEl.textContent.replace(/\s+/g," ").trim() : "";
+
+        const lessonBtns = Array.from(frag.querySelectorAll("button.video-item[data-src]"));
+        const lessons = lessonBtns
+          .map(btn => ({
+            title: btn.textContent.replace(/\s+/g," ").trim(),
+            src: (btn.dataset.src || "").trim()
+          }))
+          .filter(x => x.title && x.src);
+
+        return { id, title, desc, lessons };
+      }).filter(c => c.lessons.length > 0);
+
+      return categories;
+    }
+
+    /* ===========================
+       MENU MOBILE
+       =========================== */
+    function openSidebarOnMobile(){
+      els.sidebar.classList.add("open");
+      els.overlay.classList.add("show");
+      els.overlay.setAttribute("aria-hidden","false");
+    }
+    function closeSidebarOnMobile(){
+      els.sidebar.classList.remove("open");
+      els.overlay.classList.remove("show");
+      els.overlay.setAttribute("aria-hidden","true");
+    }
+    function isMobile(){
+      return window.matchMedia("(max-width: 980px)").matches;
+    }
+
+    /* ===========================
+       HOME (estado inicial)
+       =========================== */
+    function setHome({closeAll = true} = {}){
+      active = { catId: null, lessonIndex: null };
+
+      els.player.src = "";
+      els.placeholder.style.display = "grid";
+
+      els.currentTitle.textContent = "Início";
+      els.currentDesc.textContent = "Selecione uma categoria e uma aula no menu lateral para iniciar.";
+
+      els.panelTitle.textContent = "Aulas";
+      els.panelCount.textContent = "0 aulas";
+      els.chips.innerHTML = "";
+
+      els.tree.querySelectorAll("button.lessonBtn.active").forEach(b => b.classList.remove("active"));
+
+      if(closeAll){
+        els.tree.querySelectorAll("details.cat[open]").forEach(d => d.open = false);
+      }
+    }
+
+    /* ===========================
+       TREE RENDER (inicia fechado)
+       =========================== */
+    function renderTree(categories){
+      els.tree.innerHTML = "";
+
+      categories.forEach(cat => {
+        const details = document.createElement("details");
+        details.className = "cat";
+        details.open = false;
+        details.dataset.cat = cat.id;
+
+        const summary = document.createElement("summary");
+        summary.className = "catSummary";
+
+        const titleBox = document.createElement("div");
+        titleBox.className = "catTitle";
+
+        const strong = document.createElement("strong");
+        strong.textContent = cat.title;
+
+        const span = document.createElement("span");
+        span.textContent = cat.desc || "Sem descrição.";
+
+        const badge = document.createElement("div");
+        badge.className = "badge";
+        badge.textContent = String(cat.lessons.length);
+
+        titleBox.appendChild(strong);
+        titleBox.appendChild(span);
+        summary.appendChild(titleBox);
+        summary.appendChild(badge);
+
+        const ul = document.createElement("ul");
+        ul.className = "lessonList";
+
+        cat.lessons.forEach((lesson, idx) => {
+          const li = document.createElement("li");
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "lessonBtn";
+          btn.textContent = lesson.title;
+          btn.dataset.cat = cat.id;
+          btn.dataset.idx = String(idx);
+
+          btn.addEventListener("click", () => {
+            setActive(cat.id, idx);
+            if(isMobile()) closeSidebarOnMobile();
+          });
+
+          li.appendChild(btn);
+          ul.appendChild(li);
+        });
+
+        // Accordion: abriu uma categoria -> fecha as outras
+        details.addEventListener("toggle", () => {
+          if(details.open){
+            els.tree.querySelectorAll("details.cat").forEach(d => {
+              if(d !== details) d.open = false;
+            });
+          }
+        });
+
+        details.appendChild(summary);
+        details.appendChild(ul);
+        els.tree.appendChild(details);
+      });
+    }
+
+    /* ===========================
+       CHIPS (aulas da categoria)
+       =========================== */
+    function renderChips(catId){
+      const cat = DATA.find(c => c.id === catId);
+      els.chips.innerHTML = "";
+      if(!cat) return;
+
+      cat.lessons.forEach((l, idx) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.textContent = l.title;
+        b.dataset.idx = String(idx);
+        b.addEventListener("click", () => setActive(catId, idx, {scrollIntoView:false}));
+        els.chips.appendChild(b);
+      });
+    }
+
+    /* ===========================
+       ABRIR CATEGORIA (sem tocar vídeo)
+       =========================== */
+    function openCategory(catId, {scrollIntoView=true} = {}){
+      const cat = DATA.find(c => c.id === catId);
+      if(!cat) return;
+
+      const details = els.tree.querySelector(`details.cat[data-cat="${cssEscape(catId)}"]`);
+      if(details){
+        details.open = true;
+        els.tree.querySelectorAll("details.cat").forEach(d => { if(d !== details) d.open = false; });
+        if(scrollIntoView) details.scrollIntoView({block:"nearest"});
+      }
+
+      els.panelTitle.textContent = "Aulas desta categoria";
+      els.panelCount.textContent = `${cat.lessons.length} aula${cat.lessons.length > 1 ? "s" : ""}`;
+      renderChips(catId);
+
+      active = { catId: null, lessonIndex: null };
+      els.tree.querySelectorAll("button.lessonBtn.active").forEach(b => b.classList.remove("active"));
+      els.chips.querySelectorAll(".chip.active").forEach(b => b.classList.remove("active"));
+
+      els.player.src = "";
+      els.placeholder.style.display = "grid";
+
+      els.currentTitle.textContent = cat.title;
+      els.currentDesc.textContent = cat.desc || "Selecione uma aula.";
+    }
+
+    /* ===========================
+       SELECT VIDEO
+       =========================== */
+    function setActive(catId, lessonIndex, {scrollIntoView = true} = {}){
+      const cat = DATA.find(c => c.id === catId);
+      if(!cat) return;
+
+      const lesson = cat.lessons[lessonIndex];
+      if(!lesson) return;
+
+      active = { catId, lessonIndex };
+
+      els.player.src = lesson.src;
+      els.placeholder.style.display = "none";
+
+      els.currentTitle.textContent = `${cat.title} — ${lesson.title}`;
+      els.currentDesc.textContent = cat.desc || "";
+
+      els.panelTitle.textContent = "Aulas desta categoria";
+      els.panelCount.textContent = `${cat.lessons.length} aula${cat.lessons.length > 1 ? "s" : ""}`;
+      renderChips(catId);
+
+      els.tree.querySelectorAll("button.lessonBtn.active").forEach(b => b.classList.remove("active"));
+      const btnSel = els.tree.querySelector(`button.lessonBtn[data-cat="${cssEscape(catId)}"][data-idx="${lessonIndex}"]`);
+      if(btnSel){
+        btnSel.classList.add("active");
+        const details = btnSel.closest("details");
+        if(details){
+          details.open = true;
+          els.tree.querySelectorAll("details.cat").forEach(d => { if(d !== details) d.open = false; });
+        }
+        if(scrollIntoView) btnSel.scrollIntoView({block:"nearest"});
+      }
+
+      els.chips.querySelectorAll(".chip.active").forEach(b => b.classList.remove("active"));
+      const chipSel = els.chips.querySelector(`button.chip[data-idx="${lessonIndex}"]`);
+      if(chipSel) chipSel.classList.add("active");
+    }
+
+    /* ===========================
+       THEME (inicia no claro por HTML)
+       =========================== */
+    function toggleTheme(){
+      const current = document.body.dataset.theme || "light";
+      document.body.dataset.theme = (current === "light") ? "dark" : "light";
+    }
+
+    /* ===========================
+       SEARCH INDEX + SCORE
+       =========================== */
+    function buildSearchIndex(){
+      const idx = [];
+      for(const cat of DATA){
+        idx.push({
+          type: "category",
+          catId: cat.id,
+          catTitle: cat.title,
+          title: cat.title,
+          desc: cat.desc || "",
+          lessonIndex: null
+        });
+
+        cat.lessons.forEach((l, i) => {
+          idx.push({
+            type: "lesson",
+            catId: cat.id,
+            catTitle: cat.title,
+            title: l.title,
+            desc: cat.desc || "",
+            lessonIndex: i
+          });
+        });
+      }
+      SEARCH_INDEX = idx;
+    }
+
+    function scoreMatch(item, query){
+      const q = normalize(query);
+      if(!q) return -Infinity;
+
+      const tokens = tokenize(q);
+      const titleN = normalize(item.title);
+      const catN = normalize(item.catTitle);
+      const descN = normalize(item.desc);
+
+      let score = 0;
+
+      if(titleN === q) score += 220;
+      if(catN === q) score += 160;
+
+      if(titleN.startsWith(q)) score += 160;
+      if(catN.startsWith(q)) score += 120;
+
+      if(titleN.includes(q)) score += 120;
+      if(catN.includes(q)) score += 80;
+      if(descN.includes(q)) score += 30;
+
+      for(const t of tokens){
+        if(titleN.includes(t)) score += 26;
+        if(catN.includes(t)) score += 14;
+        if(descN.includes(t)) score += 6;
+      }
+
+      if(item.type === "lesson") score += 18;
+
+      score -= Math.min(12, Math.floor(titleN.length / 60));
+      return score;
+    }
+
+    function searchResults(query, limit=60){
+      const q = (query || "").trim();
+      if(!q) return [];
+
+      return SEARCH_INDEX
+        .map(it => ({ it, s: scoreMatch(it, q) }))
+        .filter(x => x.s > 0)
+        .sort((a,b) => b.s - a.s)
+        .slice(0, limit)
+        .map(x => x.it);
+    }
+
+    /* ===========================
+       MODAL
+       =========================== */
+    function showSearchModal(){
+      els.searchOverlay.classList.add("show");
+      els.searchModal.classList.add("show");
+      els.searchOverlay.setAttribute("aria-hidden","false");
+      els.modalSearch.focus();
+    }
+    function hideSearchModal(){
+      els.searchOverlay.classList.remove("show");
+      els.searchModal.classList.remove("show");
+      els.searchOverlay.setAttribute("aria-hidden","true");
+    }
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[s]));
+    }
+
+    function renderResultsInModal(query){
+      const results = searchResults(query, 80);
+
+      els.modalResultsList.innerHTML = "";
+      els.modalResultsCount.textContent = results.length
+        ? `${results.length} resultado${results.length > 1 ? "s" : ""}`
+        : "0 resultados";
+
+      if(results.length === 0){
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "resultBtn";
+        btn.disabled = true;
+        btn.textContent = query.trim()
+          ? "Nenhum resultado encontrado. Tente outro termo."
+          : "Digite um termo para pesquisar.";
+        li.appendChild(btn);
+        els.modalResultsList.appendChild(li);
+        return;
+      }
+
+      for(const r of results){
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "resultBtn";
+
+        const tag = r.type === "lesson" ? "Aula" : "Categoria";
+        const mainText = r.type === "lesson" ? r.title : r.catTitle;
+
+        btn.innerHTML = `<span class="resultTag">${tag}</span>${escapeHtml(mainText)}`;
+
+        const meta = document.createElement("span");
+        meta.className = "resultMeta";
+        meta.textContent = r.type === "lesson"
+          ? `${r.catTitle}`
+          : `${(r.desc || "Sem descrição").slice(0, 140)}${(r.desc || "").length > 140 ? "…" : ""}`;
+
+        btn.appendChild(meta);
+
+        btn.addEventListener("click", () => {
+          if(r.type === "lesson") setActive(r.catId, r.lessonIndex, {scrollIntoView:true});
+          else openCategory(r.catId, {scrollIntoView:true});
+
+          hideSearchModal();
+          if(isMobile()) closeSidebarOnMobile();
+        });
+
+        li.appendChild(btn);
+        els.modalResultsList.appendChild(li);
+      }
+    }
+
+    /* ===========================
+       INIT
+       =========================== */
+    function init(){
+      DATA = parseTemplates();
+
+      els.statsHint.textContent = `${DATA.length} categoria${DATA.length > 1 ? "s" : ""}`;
+      els.emptyNote.hidden = DATA.length > 0;
+
+      renderTree(DATA);
+      buildSearchIndex();
+
+      setHome({closeAll:true});
+    }
+
+    /* ===========================
+       Events
+       =========================== */
+    els.menuToggle.addEventListener("click", () => {
+      if(els.sidebar.classList.contains("open")) closeSidebarOnMobile();
+      else openSidebarOnMobile();
+    });
+    els.overlay.addEventListener("click", closeSidebarOnMobile);
+
+    els.themeBtn.addEventListener("click", toggleTheme);
+    els.homeBtn.addEventListener("click", () => {
+      setHome({closeAll:true});
+      if(isMobile()) closeSidebarOnMobile();
+    });
+
+    els.clearSearch.addEventListener("click", () => {
+      els.search.value = "";
+      els.modalSearch.value = "";
+      hideSearchModal();
+      els.search.focus();
+    });
+
+    els.openSearch.addEventListener("click", () => {
+      const q = els.search.value.trim();
+      els.modalSearch.value = q;
+      showSearchModal();
+      renderResultsInModal(q);
+    });
+
+    els.search.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        const q = els.search.value.trim();
+        els.modalSearch.value = q;
+        showSearchModal();
+        renderResultsInModal(q);
+      }
+      if(e.key === "Escape"){
+        els.search.value = "";
+        hideSearchModal();
+      }
+    });
+
+    let debounceTimer = null;
+    els.search.addEventListener("input", () => {
+      const q = els.search.value;
+      els.modalSearch.value = q;
+
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if(els.searchModal.classList.contains("show")){
+          renderResultsInModal(q);
+        }
+      }, 120);
+    });
+
+    els.modalSearch.addEventListener("input", () => {
+      els.search.value = els.modalSearch.value;
+      renderResultsInModal(els.modalSearch.value);
+    });
+
+    els.modalSearch.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        const first = els.modalResultsList.querySelector("button.resultBtn:not([disabled])");
+        if(first) first.click();
+      }
+      if(e.key === "Escape"){
+        hideSearchModal();
+        els.search.focus();
+      }
+    });
+
+    els.closeSearchModal.addEventListener("click", () => {
+      hideSearchModal();
+      els.search.focus();
+    });
+    els.searchOverlay.addEventListener("click", () => {
+      hideSearchModal();
+      els.search.focus();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape" && els.searchModal.classList.contains("show")){
+        hideSearchModal();
+        els.search.focus();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      if(!isMobile()) closeSidebarOnMobile();
+    });
+
+    init();
+  </script>
+</body>
+</html>
