@@ -6,7 +6,7 @@
   <title>Biblioteca de Aulas</title>
 
   <style>
-  :root{
+ :root{
   --radius: 14px;
   --sidebarW: 360px;
   --shadow: 0 10px 40px rgba(0,0,0,.10);
@@ -613,53 +613,94 @@ body[data-theme="dark"] .modalSearch:focus{
 
 /* =========================================================
    AJUSTES APENAS PARA TELAS PEQUENAS (SMARTPHONES EM VERTICAL)
-   - Mantém todo o restante do CSS como está.
-   - Corrige estouros horizontais e elementos que não cabem.
+   - Aprimorado para eliminar “estouro” horizontal e garantir
+     que textos/controles quebrem corretamente.
+   - Todo o restante do CSS permanece como está.
    ========================================================= */
 @media (max-width: 520px){
-  /* Botões: ligeiramente mais compactos para caber melhor */
+
+  /* 1) Segurança contra overflow horizontal (principal causa de “não caber”) */
+  html, body{ overflow-x: hidden; }
+  body{ -webkit-text-size-adjust: 100%; }
+  .app, main.main, aside.sidebar{ min-width: 0; }
+
+  /* Elementos “mídia/inputs” nunca devem ultrapassar a viewport */
+  img, video, canvas, svg, iframe, input, button, textarea, select{
+    max-width: 100%;
+  }
+
+  /* 2) Drawer (menu lateral) ocupa toda a largura no smartphone (evita aperto interno) */
+  aside.sidebar{
+    width: 100vw;       /* sobrescreve o min(92vw, 420px) no smartphone */
+    max-width: 100vw;
+    padding: 12px 10px;
+    border-right: none;
+  }
+
+  /* 3) Botões: permitem quebra de linha e ficam mais compactos */
   .btn{
     padding: 9px 10px;
     font-size: 12px;
+    white-space: normal;     /* remove o “nowrap” no mobile */
+    line-height: 1.15;
+    text-align: center;
   }
 
-  /* Sidebar (conteúdo interno) */
-  aside.sidebar{
-    padding: 12px 10px;
+  /* 4) Topbar: vira layout em linhas para tudo caber sem cortar */
+  .topbar{
+    padding: 12px 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .topbar .titles{
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  .topbar h2{
+    font-size: 15px;
+  }
+  .topbar p{
+    font-size: 12px;
+    max-height: none;         /* evita truncamento excessivo no mobile */
+  }
+  /* Se houver mais de um botão no header, eles quebram e ocupam 100%/50% */
+  .topbar .btn,
+  .topbar .menuToggle{
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+    justify-content: center;
   }
 
-  /* Cabeçalho da sidebar: evita “aperto” e garante que ações caibam */
+  /* 5) Brand / ações do menu: empilha (mais confiável que 2 colunas) */
   .brand{
     flex-wrap: wrap;
     align-items: center;
     padding: 2px 4px 10px;
+    gap: 8px;
   }
   .brandActions{
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr; /* evita qualquer estouro por texto longo */
     gap: 8px;
     align-items: stretch;
   }
-  .brandActions .btn{
-    width: 100%;
-  }
+  .brandActions .btn{ width: 100%; }
 
-  /* Busca: input em uma linha + botões na linha de baixo */
+  /* 6) Busca: organiza em grade vertical e evita inputs “esticarem” */
   .searchRow{
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
     align-items: stretch;
   }
   .searchBox input{
-    flex: 1 1 100%;
     min-width: 0;
-  }
-  .searchRow .btn{
-    flex: 1 1 calc(50% - 4px);
-    min-width: 0;
+    font-size: 16px; /* evita zoom automático em iOS */
   }
 
-  /* Dicas: quebra para não “estourar” */
+  /* Dicas: sempre em linhas separadas */
   .hintRow{
     flex-wrap: wrap;
     gap: 6px;
@@ -668,7 +709,7 @@ body[data-theme="dark"] .modalSearch:focus{
     flex: 1 1 100%;
   }
 
-  /* Menu: espaçamento mais enxuto */
+  /* 7) Árvore: reduz espaçamentos e permite quebra controlada de títulos */
   nav#tree{
     padding: 4px;
     padding-bottom: 72px;
@@ -678,21 +719,41 @@ body[data-theme="dark"] .modalSearch:focus{
   }
   summary.catSummary{
     padding: 10px 10px;
+    gap: 8px;
   }
 
-  /* Topbar: reduz paddings e melhora encaixe */
-  .topbar{
-    padding: 12px 12px;
-    gap: 10px;
-  }
-  .topbar h2{
-    font-size: 15px;
-  }
-  .topbar p{
-    font-size: 12px;
+  /* Títulos: podem quebrar em até 2 linhas (sem “estourar” a largura) */
+  .catTitle strong,
+  .catTitle span{
+    white-space: normal;      /* remove ellipsis forçado no mobile */
+    overflow: hidden;
+    text-overflow: clip;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
-  /* Player: reduz paddings para aumentar área útil */
+  /* Badge menor para não “empurrar” o layout */
+  .badge{
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+
+  /* 8) Botões/listas: quebra de palavras e links longos */
+  button.lessonBtn,
+  .resultBtn,
+  .chip,
+  .resultMeta{
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Result meta: permite quebrar (antes era nowrap) para caber */
+  .resultMeta{
+    white-space: normal;
+  }
+
+  /* 9) Player: mais área útil */
   .playerWrap{
     padding: 12px;
   }
@@ -703,8 +764,11 @@ body[data-theme="dark"] .modalSearch:focus{
     inset: 10px;
     padding: 18px;
   }
+  .placeholder h3{
+    font-size: 15px;
+  }
 
-  /* Painel inferior: evita aperto no header */
+  /* 10) Painel inferior: header empilha e chips não causam overflow lateral */
   .lessonPanelHeader{
     flex-wrap: wrap;
     align-items: flex-start;
@@ -713,8 +777,16 @@ body[data-theme="dark"] .modalSearch:focus{
     width: 100%;
     text-align: left;
   }
+  .lessonChips{
+    overflow-x: hidden;
+  }
 
-  /* Modal: reorganiza header para caber em telas estreitas */
+  /* 11) Modal: ocupa quase toda a tela e respeita safe-areas */
+  .modalDialog{
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    border-radius: 14px;
+  }
   .modalHeader{
     flex-direction: column;
     align-items: stretch;
@@ -732,10 +804,15 @@ body[data-theme="dark"] .modalSearch:focus{
   .modalSearch{
     width: 100%;
     min-width: 0;
+    font-size: 16px; /* evita zoom iOS */
   }
   .modalHeaderRight{
     width: 100%;
     justify-content: space-between;
+  }
+  .modalCount{
+    white-space: normal;
+    text-align: right;
   }
   .modalBody{
     padding: 8px;
