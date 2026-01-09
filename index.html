@@ -84,7 +84,7 @@
     background: var(--panel);
     padding: 14px 12px;
 
-    /* Importante: evita a última categoria ficar “escondida” ao final do scroll */
+    /* Importante: evita a última categoria ficar "escondida" ao final do scroll */
     overflow: auto;
     padding-bottom: calc(14px + 72px + env(safe-area-inset-bottom, 0px));
   }
@@ -323,7 +323,7 @@
     padding: 0 2px;
   }
 
-  /* Tree */
+  /* Tree - CORREÇÃO DOS TÍTULOS (REMOVIDO text-overflow: ellipsis) */
   nav#tree{
     padding: 6px;
     padding-bottom: 72px;
@@ -360,21 +360,30 @@
     display:flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
   }
+  
+  /* CORREÇÃO: Permitir quebra de linha e mostrar título completo */
   .catTitle strong{
     font-size: 13px;
     font-weight: 950;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+    overflow: visible;
+    display: block;
   }
+  
+  /* CORREÇÃO: Permitir quebra de linha na descrição também */
   .catTitle span{
     font-size: 11px;
     color: var(--muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+    overflow: visible;
+    display: block;
+    line-height: 1.3;
   }
+  
   details.cat[open] .catTitle span{ color: rgba(255,255,255,.86); }
   body[data-theme="dark"] details.cat[open] .catTitle span{ color: rgba(11,15,25,.84); }
 
@@ -613,12 +622,9 @@
 
   /* ======================================================================
      AJUSTES EXCLUSIVOS PARA TELAS PEQUENAS (SMARTPHONE / VERTICAL)
-     - evita overflow horizontal e “estouro” do player quando título é longo
-     - reorganiza topbar (Menu + títulos) e sidebar/search
-     - melhora modal em telas estreitas
      ====================================================================== */
   @media (max-width: 520px){
-    /* contenção global de largura (evita “passar do limite” em portrait) */
+    /* contenção global de largura (evita "passar do limite" em portrait) */
     body{ overflow-x: hidden; }
     .app{ min-height: 100dvh; }
     main.main{ min-width: 0; }
@@ -694,7 +700,7 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Sidebar (quando aberta no mobile): evita inputs/botões “estourarem” */
+    /* Sidebar (quando aberta no mobile): evita inputs/botões "estourarem" */
     aside.sidebar{
       padding: 12px 10px;
     }
@@ -715,6 +721,17 @@
     }
     .searchRow .btn{
       flex: 1 1 calc(50% - 4px);
+    }
+
+    /* Ajuste para títulos no mobile - manter quebra de linha */
+    .catTitle strong{
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    
+    .catTitle span{
+      font-size: 10px;
+      line-height: 1.2;
     }
 
     /* Modal: header quebra e input ocupa 100% */
