@@ -287,6 +287,45 @@
     align-items:center;
   }
 
+  /* Order Control */
+  .orderControl{
+    padding: 6px 6px 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .orderLabel{
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .orderButtons{
+    display: flex;
+    gap: 8px;
+  }
+  .orderBtn{
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 800;
+    transition: .15s ease;
+    text-align: center;
+  }
+  .orderBtn:hover{
+    background: var(--hoverBg);
+    border-color: var(--hoverBorder);
+  }
+  .orderBtn.active{
+    background: var(--activeBg);
+    color: var(--activeText);
+    border-color: transparent;
+  }
+
   /* Search */
   .searchBox{
     padding: 6px;
@@ -792,6 +831,19 @@
         <div class="brandActions">
           <button class="btn" id="homeBtn" type="button" title="Voltar ao estado inicial">Início</button>
           <button class="btn" id="themeBtn" type="button" title="Alternar tema">Tema</button>
+        </div>
+      </div>
+
+      <!-- NOVO: Controle de Ordenação -->
+      <div class="orderControl">
+        <div class="orderLabel">ORDEM DAS PASTAS:</div>
+        <div class="orderButtons">
+          <button class="orderBtn active" id="orderCurrent" data-order="current" title="Manter ordem atual">
+            ORDEM ATUAL
+          </button>
+          <button class="orderBtn" id="orderAlpha" data-order="alpha" title="Ordenar alfabeticamente">
+            ALFABÉTICA
+          </button>
         </div>
       </div>
 
@@ -2707,11 +2759,18 @@
       closeSearchModal: document.getElementById("closeSearchModal"),
       modalResultsList: document.getElementById("modalResultsList"),
       modalResultsCount: document.getElementById("modalResultsCount"),
+
+      // NOVO: Controles de ordenação
+      orderCurrent: document.getElementById("orderCurrent"),
+      orderAlpha: document.getElementById("orderAlpha"),
     };
 
     let DATA = [];
     let SEARCH_INDEX = [];
     let active = { catId: null, lessonIndex: null };
+    
+    // NOVO: Estado da ordenação
+    let currentOrder = "current"; // "current" ou "alpha"
 
     function normalize(s){
       return (s || "")
@@ -2721,16 +2780,17 @@
         .replace(/\s+/g, " ")
         .trim();
     }
+    
     function tokenize(q){
       return normalize(q).split(" ").filter(Boolean);
     }
+    
     function cssEscape(value){
       if(window.CSS && CSS.escape) return CSS.escape(value);
       return String(value).replace(/["\\]/g, "\\$&");
     }
 
     function prettyTitleFromId(id){
-      // fallback (último recurso). Evita "Trilha 1" como padrão de UX.
       const s = String(id || "").trim();
       const m = s.match(/^card-(\d+)$/i);
       if(m) return `Categoria ${m[1]}`;
@@ -2743,23 +2803,13 @@
 
     function getCategoryTitleFromTemplate(tpl){
       const id = tpl.id || "sem-id";
-
-      // 1) Sobrescrita explícita no próprio template
       const explicit = (tpl.dataset && tpl.dataset.title && tpl.dataset.title.trim()) ? tpl.dataset.title.trim() : "";
-
-      // 2) Dicionário por ID (soluciona o "menu genérico" sem exigir data-title em todos)
       const mapped = CATEGORY_TITLES[id] ? String(CATEGORY_TITLES[id]).trim() : "";
-
-      // 3) Fallback
       const fallback = prettyTitleFromId(id);
-
       const title = explicit || mapped || fallback;
-
-      // Se não houve explicit nem mapeamento e caiu em fallback, avisa no console
       if(!explicit && !mapped){
         console.warn(`[Biblioteca] Template "${id}" sem título definido. Sugestão: adicione data-title="" no <template> ou inclua em CATEGORY_TITLES.`);
       }
-
       return title;
     }
 
@@ -2794,6 +2844,65 @@
     }
 
     /* ===========================
+       FUNÇÕES DE ORDENAÇÃO
+       =========================== */
+    function sortCategories(categories, order = "current") {
+      if (order === "current") {
+        // Mantém a ordem original dos templates
+        return [...categories];
+      } else if (order === "alpha") {
+        // Ordena alfabeticamente pelo título da categoria
+        return [...categories].sort((a, b) => {
+          // Remove acentos e converte para minúsculas para ordenação correta
+          const titleA = normalize(a.title);
+          const titleB = normalize(b.title);
+          return titleA.localeCompare(titleB, 'pt-BR');
+        }).map(cat => {
+          // Dentro de cada categoria, ordena as aulas alfabeticamente
+          const sortedLessons = [...cat.lessons].sort((a, b) => {
+            const titleA = normalize(a.title);
+            const titleB = normalize(b.title);
+            return titleA.localeCompare(titleB, 'pt-BR');
+          });
+          return { ...cat, lessons: sortedLessons };
+        });
+      }
+      return categories;
+    }
+
+    /* ===========================
+       ATUALIZAR ORDENAÇÃO
+       =========================== */
+    function updateOrder(newOrder) {
+      if (newOrder === currentOrder) return;
+      
+      currentOrder = newOrder;
+      
+      // Atualiza a interface dos botões
+      els.orderCurrent.classList.toggle("active", newOrder === "current");
+      els.orderAlpha.classList.toggle("active", newOrder === "alpha");
+      
+      // Salva a preferência no localStorage
+      localStorage.setItem("biblioteca-order", newOrder);
+      
+      // Re-renderiza a árvore com a nova ordenação
+      const sortedData = sortCategories(DATA, newOrder);
+      renderTree(sortedData);
+      
+      // Mantém a categoria/aula ativa se houver uma selecionada
+      if (active.catId && active.lessonIndex !== null) {
+        // Encontra a categoria na nova ordem
+        const newCatIndex = sortedData.findIndex(cat => cat.id === active.catId);
+        if (newCatIndex !== -1) {
+          // Mantém a seleção atual
+          setTimeout(() => {
+            setActive(active.catId, active.lessonIndex, {scrollIntoView: false});
+          }, 10);
+        }
+      }
+    }
+
+    /* ===========================
        MENU MOBILE
        =========================== */
     function openSidebarOnMobile(){
@@ -2801,11 +2910,13 @@
       els.overlay.classList.add("show");
       els.overlay.setAttribute("aria-hidden","false");
     }
+    
     function closeSidebarOnMobile(){
       els.sidebar.classList.remove("open");
       els.overlay.classList.remove("show");
       els.overlay.setAttribute("aria-hidden","true");
     }
+    
     function isMobile(){
       return window.matchMedia("(max-width: 980px)").matches;
     }
@@ -2887,7 +2998,6 @@
           ul.appendChild(li);
         });
 
-        // Accordion: abriu uma categoria -> fecha as outras
         details.addEventListener("toggle", () => {
           if(details.open){
             els.tree.querySelectorAll("details.cat").forEach(d => {
@@ -3080,6 +3190,7 @@
       els.searchOverlay.setAttribute("aria-hidden","false");
       els.modalSearch.focus();
     }
+    
     function hideSearchModal(){
       els.searchOverlay.classList.remove("show");
       els.searchModal.classList.remove("show");
@@ -3152,10 +3263,23 @@
     function init(){
       DATA = parseTemplates();
 
-      els.statsHint.textContent = `${DATA.length} categoria${DATA.length > 1 ? "s" : ""}`;
-      els.emptyNote.hidden = DATA.length > 0;
+      // Carrega a preferência de ordenação do localStorage
+      const savedOrder = localStorage.getItem("biblioteca-order");
+      if (savedOrder && (savedOrder === "current" || savedOrder === "alpha")) {
+        currentOrder = savedOrder;
+      }
 
-      renderTree(DATA);
+      // Atualiza a interface dos botões de ordenação
+      els.orderCurrent.classList.toggle("active", currentOrder === "current");
+      els.orderAlpha.classList.toggle("active", currentOrder === "alpha");
+
+      // Ordena os dados conforme a preferência
+      const sortedData = sortCategories(DATA, currentOrder);
+      
+      els.statsHint.textContent = `${sortedData.length} categoria${sortedData.length > 1 ? "s" : ""}`;
+      els.emptyNote.hidden = sortedData.length > 0;
+
+      renderTree(sortedData);
       buildSearchIndex();
 
       setHome({closeAll:true});
@@ -3168,13 +3292,19 @@
       if(els.sidebar.classList.contains("open")) closeSidebarOnMobile();
       else openSidebarOnMobile();
     });
+    
     els.overlay.addEventListener("click", closeSidebarOnMobile);
 
     els.themeBtn.addEventListener("click", toggleTheme);
+    
     els.homeBtn.addEventListener("click", () => {
       setHome({closeAll:true});
       if(isMobile()) closeSidebarOnMobile();
     });
+
+    // NOVO: Eventos para os botões de ordenação
+    els.orderCurrent.addEventListener("click", () => updateOrder("current"));
+    els.orderAlpha.addEventListener("click", () => updateOrder("alpha"));
 
     els.clearSearch.addEventListener("click", () => {
       els.search.value = "";
@@ -3238,6 +3368,7 @@
       hideSearchModal();
       els.search.focus();
     });
+    
     els.searchOverlay.addEventListener("click", () => {
       hideSearchModal();
       els.search.focus();
