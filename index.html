@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Aulas Teóricas - Plataforma de Videoaulas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -20,11 +20,10 @@
             --accent: #ff4d8d;
             --shadow-light: 0 8px 32px rgba(0, 217, 255, 0.1);
             --shadow-hologram: 0 0 20px rgba(0, 217, 255, 0.3), 0 0 40px rgba(157, 78, 221, 0.2);
-            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --transition: all 0.3s ease;
             --border-radius: 16px;
             --border-radius-sm: 10px;
             
-            /* Novas cores para as fases */
             --phase-1-color: #00d9ff;
             --phase-2-color: #9d4edd;
             --phase-3-color: #ff2a9d;
@@ -50,10 +49,9 @@
                 radial-gradient(circle at 10% 20%, rgba(0, 217, 255, 0.05) 0%, transparent 30%),
                 radial-gradient(circle at 90% 80%, rgba(157, 78, 221, 0.05) 0%, transparent 30%),
                 linear-gradient(135deg, #f8fdff 0%, #f0f9ff 100%);
-            position: relative;
+            line-height: 1.5;
         }
 
-        /* Linhas de grade holográficas */
         .grid-lines {
             position: fixed;
             top: 0;
@@ -69,7 +67,6 @@
             opacity: 0.5;
         }
 
-        /* Efeito de partículas de luz */
         .light-particles {
             position: fixed;
             top: 0;
@@ -92,12 +89,11 @@
             50% { transform: scale(1.2); opacity: 0.6; }
         }
 
-        /* Header futurista */
         .header {
-            padding: 2rem 0 1.5rem;
+            padding: 1.5rem 0 1rem;
             text-align: center;
             position: relative;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .header::before {
@@ -113,24 +109,23 @@
 
         .logo {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.8rem;
+            font-size: clamp(1.8rem, 6vw, 2.8rem);
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.15rem;
-            margin-bottom: 0.6rem;
             background: linear-gradient(135deg, var(--hologram-blue), var(--hologram-purple), var(--hologram-pink));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            position: relative;
             display: inline-block;
             text-shadow: 0 0 30px rgba(0, 217, 255, 0.2);
+            padding: 0 0.5rem;
         }
 
         .logo::after {
             content: '';
             position: absolute;
-            width: 100px;
+            width: 80px;
             height: 3px;
             bottom: -8px;
             left: 50%;
@@ -140,32 +135,22 @@
             box-shadow: 0 0 10px var(--hologram-blue);
         }
 
-        .tagline {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            margin-top: 1rem;
-            letter-spacing: 0.05rem;
-            font-weight: 300;
-        }
-
-        .tagline span {
-            color: var(--hologram-blue);
-            font-weight: 500;
-        }
-
-        /* Container principal */
         .container {
+            width: 100%;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 1.5rem;
+            padding: 0 1rem;
         }
 
-        /* ============================
-           LAYOUT EM TABELA DINÂMICA
-        ============================ */
+        @media (min-width: 768px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+        }
+
         .table-controls {
             display: flex;
-            justify-content: center; /* Centralizado */
+            justify-content: center;
             align-items: center;
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
@@ -174,8 +159,8 @@
 
         .search-box {
             position: relative;
-            flex: 1;
-            max-width: 600px; /* Largura aumentada para centralização */
+            width: 100%;
+            max-width: 600px;
         }
 
         .search-box input {
@@ -204,468 +189,8 @@
             color: var(--hologram-blue);
         }
 
-        /* Estilos do Acordeão */
-        .accordion-container {
-            margin-top: 2rem;
-        }
-
-        .accordion-item {
-            margin-bottom: 1rem;
-            border: 1px solid rgba(0, 217, 255, 0.2);
-            border-radius: var(--border-radius-sm);
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.9);
-            transition: var(--transition);
-        }
-
-        .accordion-item:hover {
-            border-color: var(--hologram-blue);
-            box-shadow: 0 5px 15px rgba(0, 217, 255, 0.1);
-        }
-
-        .accordion-header {
-            padding: 1.2rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            background: rgba(0, 217, 255, 0.05);
-            transition: var(--transition);
-        }
-
-        .accordion-header:hover {
-            background: rgba(0, 217, 255, 0.1);
-        }
-
-        .accordion-header.active {
-            background: rgba(0, 217, 255, 0.1);
-            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
-        }
-
-        .accordion-title {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .accordion-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, var(--hologram-blue), var(--hologram-purple));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        .accordion-title-text h4 {
-            font-family: 'Exo 2', sans-serif;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-            margin-bottom: 0.2rem;
-        }
-
-        .accordion-title-text p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .accordion-indicator {
-            color: var(--hologram-blue);
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
-        }
-
-        .accordion-header.active .accordion-indicator {
-            transform: rotate(180deg);
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease;
-        }
-
-        .accordion-content.active {
-            max-height: 2000px;
-        }
-
-        .accordion-videos {
-            padding: 1.5rem;
-        }
-
-        .accordion-video-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        .accordion-video-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background: rgba(0, 217, 255, 0.05);
-            border-radius: var(--border-radius-sm);
-            transition: var(--transition);
-            cursor: pointer;
-            border-left: 3px solid transparent;
-        }
-
-        .accordion-video-item:hover {
-            background: rgba(0, 217, 255, 0.1);
-            border-left-color: var(--hologram-blue);
-            transform: translateX(5px);
-        }
-
-        .accordion-video-content {
-            flex: 1;
-        }
-
-        .accordion-video-content h5 {
-            font-size: 1rem;
-            color: var(--text-primary);
-            margin-bottom: 0.3rem;
-            font-weight: 500;
-        }
-
-        .accordion-video-content p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .accordion-video-meta {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        .video-duration {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--hologram-blue);
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .video-views {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .play-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(0, 217, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--hologram-blue);
-            margin-left: 1rem;
-            flex-shrink: 0;
-            transition: var(--transition);
-        }
-
-        .accordion-video-item:hover .play-icon {
-            background: var(--hologram-blue);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        /* PLAYER DE VÍDEO EM TELA CHEIA */
-        .video-fullscreen-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--light-bg);
-            z-index: 10000;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .video-fullscreen-container.active {
-            display: flex;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .video-fullscreen-header {
-            padding: 1.5rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(248, 253, 255, 0.95);
-            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
-            z-index: 2;
-            backdrop-filter: blur(10px);
-            min-height: 90px;
-            flex-shrink: 0;
-        }
-
-        .video-fullscreen-title {
-            flex: 1;
-        }
-
-        .video-fullscreen-title h2 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--hologram-blue), var(--hologram-purple));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .video-fullscreen-title p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .back-to-platform {
-            padding: 0.8rem 1.5rem;
-            background: rgba(0, 217, 255, 0.1);
-            border: 1px solid rgba(0, 217, 255, 0.3);
-            border-radius: 30px;
-            color: var(--hologram-blue);
-            font-family: 'Exo 2', sans-serif;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-left: 2rem;
-        }
-
-        .back-to-platform:hover {
-            background: var(--hologram-blue);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
-        }
-
-        /* AJUSTE PRINCIPAL: ÁREA DO VÍDEO MAIOR VERTICALMENTE */
-        .video-fullscreen-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            min-height: 0; /* Importante para flexbox funcionar corretamente */
-        }
-
-        .video-fullscreen-player {
-            flex: 1;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--light-bg);
-            padding: 0.75rem; /* Reduzido para dar mais espaço ao vídeo */
-            min-height: 0; /* Importante para flexbox funcionar corretamente */
-        }
-
-        .fullscreen-video-wrapper {
-            width: 100%;
-            height: 100%;
-            max-width: 1600px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 0; /* Importante para flexbox funcionar corretamente */
-        }
-
-        /* AJUSTE PRINCIPAL: IFRAME DO VÍDEO MAIOR */
-        .fullscreen-video-player {
-            width: 100%;
-            height: 100%; /* Alterado para 100% para ocupar toda a altura disponível */
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            min-height: 0; /* Importante para flexbox funcionar corretamente */
-        }
-
-        .video-fullscreen-sidebar {
-            width: 320px;
-            background: rgba(248, 253, 255, 0.95);
-            border-left: 1px solid rgba(0, 217, 255, 0.2);
-            padding: 1.5rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(10px);
-            flex-shrink: 0;
-        }
-
-        .sidebar-title-fullscreen {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--text-primary);
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
-        }
-
-        .playlist-videos {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        .playlist-video-item {
-            padding: 0.9rem;
-            background: rgba(0, 217, 255, 0.05);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid transparent;
-        }
-
-        .playlist-video-item:hover {
-            background: rgba(0, 217, 255, 0.1);
-            border-color: rgba(0, 217, 255, 0.3);
-        }
-
-        .playlist-video-item.active {
-            background: rgba(0, 217, 255, 0.15);
-            border-color: var(--hologram-blue);
-        }
-
-        .playlist-video-item h5 {
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .playlist-video-meta {
-            display: flex;
-            justify-content: space-between;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        .video-progress {
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(0, 217, 255, 0.2);
-        }
-
-        .progress-label {
-            color: var(--text-primary);
-            margin-bottom: 0.8rem;
-            font-size: 0.9rem;
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: rgba(0, 217, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--hologram-blue), var(--hologram-purple));
-            width: 65%;
-            border-radius: 3px;
-            position: relative;
-        }
-
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            right: -5px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 12px;
-            height: 12px;
-            background: var(--hologram-blue);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--hologram-blue);
-        }
-
-        /* Footer futurista */
-        .footer {
-            text-align: center;
-            padding: 2.5rem 0;
-            margin-top: 4rem;
-            border-top: 1px solid rgba(0, 217, 255, 0.1);
-            position: relative;
-        }
-
-        .footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--hologram-blue), var(--hologram-purple), transparent);
-        }
-
-        .footer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.2rem;
-        }
-
-        .footer-logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--hologram-blue), var(--hologram-purple));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 0.1rem;
-        }
-
-        .footer-tech {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .tech-item {
-            padding: 0.6rem 1.2rem;
-            background: rgba(0, 217, 255, 0.05);
-            border-radius: 20px;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            border: 1px solid rgba(0, 217, 255, 0.1);
-            transition: var(--transition);
-        }
-
-        .tech-item:hover {
-            background: rgba(0, 217, 255, 0.1);
-            color: var(--hologram-blue);
-            border-color: var(--hologram-blue);
-            transform: translateY(-3px);
-        }
-
-        .copyright {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-top: 1.5rem;
-        }
-
-        /* Estilos para as fases */
         .phase-container {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border-radius: var(--border-radius);
             overflow: hidden;
             border: 1px solid rgba(0, 217, 255, 0.3);
@@ -679,11 +204,21 @@
         }
 
         .phase-header {
-            padding: 1.5rem;
+            padding: 1.2rem;
             background: rgba(255, 255, 255, 0.95);
             border-bottom: 1px solid rgba(0, 217, 255, 0.2);
             cursor: pointer;
             transition: var(--transition);
+            width: 100%;
+            text-align: left;
+            border: none;
+            font-family: inherit;
+        }
+
+        @media (min-width: 768px) {
+            .phase-header {
+                padding: 1.5rem;
+            }
         }
 
         .phase-header:hover {
@@ -699,150 +234,139 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
         }
 
         .phase-number {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             flex-shrink: 0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             transition: var(--transition);
-            position: relative;
-            overflow: hidden;
             border: 3px solid white;
         }
 
-        /* Cores específicas para cada fase */
+        @media (min-width: 768px) {
+            .phase-number {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+
         .phase-container[data-phase="1"] .phase-number {
             background: linear-gradient(135deg, var(--phase-1-color), #0077ff);
             box-shadow: 0 4px 15px rgba(0, 217, 255, 0.4);
         }
-        
         .phase-container[data-phase="2"] .phase-number {
             background: linear-gradient(135deg, var(--phase-2-color), #7b2cbf);
             box-shadow: 0 4px 15px rgba(157, 78, 221, 0.4);
         }
-        
         .phase-container[data-phase="3"] .phase-number {
             background: linear-gradient(135deg, var(--phase-3-color), #cc0066);
             box-shadow: 0 4px 15px rgba(255, 42, 157, 0.4);
         }
-        
         .phase-container[data-phase="4"] .phase-number {
             background: linear-gradient(135deg, var(--phase-4-color), #0066cc);
             box-shadow: 0 4px 15px rgba(42, 157, 255, 0.4);
         }
-        
         .phase-container[data-phase="5"] .phase-number {
             background: linear-gradient(135deg, var(--phase-5-color), #cc6600);
             box-shadow: 0 4px 15px rgba(255, 157, 42, 0.4);
         }
-        
         .phase-container[data-phase="6"] .phase-number {
             background: linear-gradient(135deg, var(--phase-6-color), #00cc66);
             box-shadow: 0 4px 15px rgba(42, 255, 157, 0.4);
         }
-        
         .phase-container[data-phase="7"] .phase-number {
             background: linear-gradient(135deg, var(--phase-7-color), #6600cc);
             box-shadow: 0 4px 15px rgba(157, 42, 255, 0.4);
         }
 
-        .phase-number span {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            z-index: 2;
-        }
-
         .phase-title-text h3 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             color: var(--text-primary);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
         }
 
-        /* Cores específicas para os títulos das fases */
+        @media (min-width: 768px) {
+            .phase-title-text h3 {
+                font-size: 1.3rem;
+            }
+        }
+
         .phase-container[data-phase="1"] .phase-title-text h3 {
             color: var(--phase-1-color);
         }
-        
         .phase-container[data-phase="2"] .phase-title-text h3 {
             color: var(--phase-2-color);
         }
-        
         .phase-container[data-phase="3"] .phase-title-text h3 {
             color: var(--phase-3-color);
         }
-        
         .phase-container[data-phase="4"] .phase-title-text h3 {
             color: var(--phase-4-color);
         }
-        
         .phase-container[data-phase="5"] .phase-title-text h3 {
             color: var(--phase-5-color);
         }
-        
         .phase-container[data-phase="6"] .phase-title-text h3 {
             color: var(--phase-6-color);
         }
-        
         .phase-container[data-phase="7"] .phase-title-text h3 {
             color: var(--phase-7-color);
         }
 
         .phase-description {
             color: var(--text-secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.5;
-            margin-left: 0;
-            padding-left: 3.5rem;
-            background: rgba(0, 0, 0, 0.02);
-            padding: 1rem;
-            border-radius: 8px;
             margin-top: 0.8rem;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 8px;
             border-left: 3px solid var(--hologram-blue);
         }
 
-        /* Cores específicas para as descrições das fases */
+        @media (min-width: 768px) {
+            .phase-description {
+                font-size: 0.95rem;
+                padding: 1rem;
+            }
+        }
+
         .phase-container[data-phase="1"] .phase-description {
             border-left-color: var(--phase-1-color);
             background: rgba(0, 217, 255, 0.05);
         }
-        
         .phase-container[data-phase="2"] .phase-description {
             border-left-color: var(--phase-2-color);
             background: rgba(157, 78, 221, 0.05);
         }
-        
         .phase-container[data-phase="3"] .phase-description {
             border-left-color: var(--phase-3-color);
             background: rgba(255, 42, 157, 0.05);
         }
-        
         .phase-container[data-phase="4"] .phase-description {
             border-left-color: var(--phase-4-color);
             background: rgba(42, 157, 255, 0.05);
         }
-        
         .phase-container[data-phase="5"] .phase-description {
             border-left-color: var(--phase-5-color);
             background: rgba(255, 157, 42, 0.05);
         }
-        
         .phase-container[data-phase="6"] .phase-description {
             border-left-color: var(--phase-6-color);
             background: rgba(42, 255, 157, 0.05);
         }
-        
         .phase-container[data-phase="7"] .phase-description {
             border-left-color: var(--phase-7-color);
             background: rgba(157, 42, 255, 0.05);
@@ -862,266 +386,726 @@
             color: var(--hologram-blue);
             font-size: 1.2rem;
             transition: transform 0.3s ease;
+            margin-left: auto;
         }
 
         .phase-header.active .phase-indicator {
             transform: rotate(180deg);
         }
 
-        /* Ícones dentro dos cards ajustados para cores das fases */
+        .accordion-item {
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.9);
+            transition: var(--transition);
+        }
+
+        .accordion-item:hover {
+            border-color: var(--hologram-blue);
+            box-shadow: 0 5px 15px rgba(0, 217, 255, 0.1);
+        }
+
+        .accordion-header {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(0, 217, 255, 0.05);
+            transition: var(--transition);
+            width: 100%;
+            text-align: left;
+            border: none;
+            font-family: inherit;
+        }
+
+        @media (min-width: 768px) {
+            .accordion-header {
+                padding: 1.2rem 1.5rem;
+            }
+        }
+
+        .accordion-header:hover {
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        .accordion-header.active {
+            background: rgba(0, 217, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+        }
+
+        .accordion-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .accordion-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--hologram-blue), var(--hologram-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
         .phase-container[data-phase="1"] .accordion-icon {
             background: linear-gradient(135deg, var(--phase-1-color), #0077ff);
         }
-        
         .phase-container[data-phase="2"] .accordion-icon {
             background: linear-gradient(135deg, var(--phase-2-color), #7b2cbf);
         }
-        
         .phase-container[data-phase="3"] .accordion-icon {
             background: linear-gradient(135deg, var(--phase-3-color), #cc0066);
         }
-        
         .phase-container[data-phase="4"] .accordion-icon {
             background: linear-gradient(135deg, var(--phase-4-color), #0066cc);
         }
-        
         .phase-container[data-phase="5"] .accordion-icon {
             background: linear-gradient(135deg, var(--phase-5-color), #cc6600);
         }
-        
         .phase-container[data-phase="6"] .accordion-icon {
             background: linear-gradient(135deg, var(--phase-6-color), #00cc66);
         }
-        
         .phase-container[data-phase="7"] .accordion-icon {
             background: linear-gradient(135deg, var(--phase-7-color), #6600cc);
         }
 
-        /* Responsividade */
-        @media (max-width: 1100px) {
-            .video-fullscreen-content {
-                flex-direction: column;
-            }
-            
-            .video-fullscreen-sidebar {
-                width: 100%;
-                height: 300px;
-                border-left: none;
-                border-top: 1px solid rgba(0, 217, 255, 0.2);
-            }
-            
-            /* Ajuste para telas menores: vídeo mais compacto */
-            .video-fullscreen-player {
-                padding: 1rem;
-                min-height: 400px;
-            }
-            
-            .fullscreen-video-player {
-                height: auto;
-                max-height: 70vh;
+        .accordion-title-text h4 {
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .accordion-title-text p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .accordion-indicator {
+            color: var(--hologram-blue);
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-header.active .accordion-indicator {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .accordion-content.active {
+            max-height: 2000px;
+        }
+
+        .accordion-videos {
+            padding: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .accordion-videos {
+                padding: 1.5rem;
             }
         }
 
-        @media (max-width: 768px) {
-            .logo {
-                font-size: 2.2rem;
-            }
-            
-            .table-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .search-box {
-                max-width: 100%;
-            }
-            
-            .video-fullscreen-header {
-                flex-direction: column;
-                gap: 1rem;
-                padding: 1rem;
-                min-height: auto;
-            }
-            
-            .back-to-platform {
-                margin-left: 0;
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .video-fullscreen-title h2 {
-                font-size: 1.2rem;
-            }
-            
-            .phase-title {
-                flex-direction: row;
-                align-items: center;
-                gap: 0.8rem;
-            }
-            
-            .phase-number {
-                width: 45px;
-                height: 45px;
-                font-size: 1.1rem;
-            }
-            
-            .phase-title-text h3 {
-                font-size: 1.1rem;
-            }
-            
-            .phase-description {
-                padding-left: 1rem;
-                margin-left: 0;
-                font-size: 0.9rem;
-            }
-            
-            /* Ajustes específicos para o vídeo em dispositivos móveis */
-            .video-fullscreen-player {
-                padding: 0.75rem;
-                min-height: 300px;
-            }
-            
-            .fullscreen-video-wrapper {
-                width: calc(100% - 0.5rem);
-            }
-            
-            .fullscreen-video-player {
-                height: auto;
-                max-height: 60vh;
-                border-radius: 6px;
-            }
+        .accordion-video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
         }
 
-        @media (max-width: 480px) {
-            .phase-title {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-            
-            .phase-number {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-            
-            .phase-description {
-                padding: 0.8rem;
-                font-size: 0.85rem;
-            }
-            
-            /* Ajustes específicos para smartphones em modo retrato */
-            .video-fullscreen-player {
-                padding: 0.5rem;
-                align-items: flex-start;
-                padding-top: 0.75rem;
-                min-height: 250px;
-            }
-            
-            .fullscreen-video-wrapper {
-                width: calc(100% - 1rem);
-                margin: 0 auto;
-            }
-            
-            .fullscreen-video-player {
-                width: 100%;
-                height: auto;
-                max-height: 50vh;
-                border-radius: 4px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-            }
-            
-            /* Ajustar sidebar em telas muito pequenas */
-            .video-fullscreen-sidebar {
+        .accordion-video-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: rgba(0, 217, 255, 0.05);
+            border-radius: var(--border-radius-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        @media (min-width: 768px) {
+            .accordion-video-item {
                 padding: 1rem;
             }
-            
-            .playlist-video-item {
-                padding: 0.7rem;
+        }
+
+        .accordion-video-item:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-left-color: var(--hologram-blue);
+            transform: translateX(5px);
+        }
+
+        .accordion-video-content {
+            flex: 1;
+        }
+
+        .accordion-video-content h5 {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+        }
+
+        .accordion-video-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .video-duration {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: var(--hologram-blue);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .video-views {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .play-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 217, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--hologram-blue);
+            margin-left: 0.5rem;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .accordion-video-item:hover .play-icon {
+            background: var(--hologram-blue);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* ===== PLAYER DE VÍDEO ===== */
+        /* Estrutura base do container fullscreen */
+        .video-fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .video-fullscreen-container.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Modo desktop (versão 1) - ativado acima de 768px */
+        .desktop-player {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            background: var(--light-bg);
+        }
+
+        @media (min-width: 768px) {
+            .desktop-player {
+                display: flex;
             }
-            
-            .playlist-video-item h5 {
-                font-size: 0.9rem;
+            .mobile-player {
+                display: none;
             }
         }
 
-        /* Ajuste específico para telas muito estreitas (smartphones pequenos) */
-        @media (max-width: 360px) {
-            .video-fullscreen-player {
-                padding: 0.5rem;
-                min-height: 200px;
+        .desktop-player .video-fullscreen-header {
+            padding: 1.5rem 2rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(248, 253, 255, 0.95);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+
+        .desktop-player .video-fullscreen-title {
+            flex: 1;
+        }
+
+        .desktop-player .video-fullscreen-title h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--hologram-blue), var(--hologram-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .desktop-player .video-fullscreen-title p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .desktop-player .back-to-platform {
+            padding: 0.8rem 1.5rem;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 30px;
+            color: var(--hologram-blue);
+            font-family: 'Exo 2', sans-serif;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-left: 2rem;
+        }
+
+        .desktop-player .back-to-platform:hover {
+            background: var(--hologram-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+        }
+
+        .desktop-player .video-fullscreen-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .desktop-player .video-fullscreen-player {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--light-bg);
+            padding: 0.75rem;
+            min-height: 0;
+        }
+
+        .desktop-player .fullscreen-video-wrapper {
+            width: 100%;
+            height: 100%;
+            max-width: 1600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .desktop-player .fullscreen-video-player {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .desktop-player .video-fullscreen-sidebar {
+            width: 320px;
+            background: rgba(248, 253, 255, 0.95);
+            border-left: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 1.5rem;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+
+        .desktop-player .sidebar-title-fullscreen {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+        }
+
+        .desktop-player .playlist-videos {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .desktop-player .playlist-video-item {
+            padding: 0.9rem;
+            background: rgba(0, 217, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .desktop-player .playlist-video-item:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: rgba(0, 217, 255, 0.3);
+        }
+
+        .desktop-player .playlist-video-item.active {
+            background: rgba(0, 217, 255, 0.15);
+            border-color: var(--hologram-blue);
+        }
+
+        .desktop-player .playlist-video-item h5 {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .desktop-player .playlist-video-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .desktop-player .video-progress {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 217, 255, 0.2);
+        }
+
+        .desktop-player .progress-label {
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .desktop-player .progress-bar {
+            height: 6px;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .desktop-player .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--hologram-blue), var(--hologram-purple));
+            width: 65%;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .desktop-player .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: var(--hologram-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--hologram-blue);
+        }
+
+        /* Modo mobile (versão 2) - ativado abaixo de 768px */
+        .mobile-player {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            background: #000;
+        }
+
+        @media (max-width: 767px) {
+            .mobile-player {
+                display: flex;
             }
-            
-            .fullscreen-video-wrapper {
-                width: calc(100% - 1rem);
-            }
-            
-            .fullscreen-video-player {
-                max-height: 45vh;
-            }
-            
-            .video-fullscreen-title h2 {
-                font-size: 1.1rem;
-            }
-            
-            .video-fullscreen-title p {
-                font-size: 0.8rem;
+            .desktop-player {
+                display: none;
             }
         }
 
-        /* Ajuste para orientação paisagem em dispositivos móveis */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .video-fullscreen-player {
-                padding: 0.5rem;
-                min-height: 300px;
-            }
-            
-            .fullscreen-video-player {
-                max-height: 85vh;
-            }
-            
-            .video-fullscreen-header {
-                padding: 0.75rem 1rem;
-                min-height: 70px;
-            }
+        .mobile-player .video-fullscreen-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            color: white;
+            z-index: 10;
+            flex-shrink: 0;
         }
-        
-        /* Melhorias para telas grandes - vídeo ainda maior */
-        @media (min-width: 1600px) {
-            .video-fullscreen-player {
-                padding: 1rem 0.75rem;
-            }
-            
-            .fullscreen-video-wrapper {
-                max-width: 1800px;
-            }
+
+        .mobile-player .video-fullscreen-header h2 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0;
+            flex: 1;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 0.5rem;
+            color: white;
         }
-        
-        /* Animações */
+
+        .mobile-player .video-fullscreen-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .mobile-player .video-fullscreen-header button:hover {
+            color: var(--hologram-blue);
+        }
+
+        .mobile-player .video-fullscreen-player {
+            flex: 1;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        .mobile-player .fullscreen-video-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-player .fullscreen-video-player {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        .mobile-player .video-info {
+            padding: 1rem;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .mobile-player .video-info p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+
+        .mobile-player .video-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--hologram-blue);
+        }
+
+        .mobile-player .video-navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 1rem 1rem;
+            gap: 1rem;
+        }
+
+        .mobile-player .video-navigation button {
+            flex: 1;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .mobile-player .video-navigation button:active {
+            background: var(--hologram-blue);
+            color: #000;
+        }
+
+        .mobile-player .video-navigation button:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .mobile-player .playlist-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            background: rgba(20,20,30,0.95);
+            backdrop-filter: blur(10px);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 10002;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
+
+        .mobile-player .playlist-overlay.active {
+            transform: translateY(0);
+        }
+
+        .mobile-player .playlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .mobile-player .playlist-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .mobile-player .playlist-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.4rem;
+            cursor: pointer;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .mobile-player .playlist-videos {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .mobile-player .playlist-video-item {
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .mobile-player .playlist-video-item.active {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: var(--hologram-blue);
+        }
+
+        .mobile-player .playlist-video-item h5 {
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .mobile-player .playlist-video-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .mobile-player .overlay-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10001;
+            display: none;
+        }
+
+        .mobile-player .overlay-backdrop.active {
+            display: block;
+        }
+
+        /* Elementos comuns */
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(0, 217, 255, 0.1);
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--hologram-blue), var(--hologram-purple), transparent);
+        }
+
+        .copyright {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        button:focus-visible {
+            outline: 2px solid var(--hologram-blue);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body>
-    <!-- Linhas de grade holográficas -->
     <div class="grid-lines"></div>
-    
-    <!-- Efeito de partículas de luz -->
     <div class="light-particles" id="lightParticles"></div>
 
-    <!-- Header -->
     <header class="header">
         <div class="container">
             <h1 class="logo">Aulas Teóricas</h1>
-            <!-- Tagline removida conforme solicitado -->
         </div>
     </header>
 
-    <!-- Conteúdo Principal -->
     <main class="container">
-        <!-- Layout em Tabela Dinâmica -->
         <div>
             <div class="table-controls">
                 <div class="search-box">
@@ -1130,63 +1114,94 @@
                 </div>
             </div>
             
-            <!-- Container para as fases -->
-            <div class="accordion-container" id="phases-container">
-                <!-- Todas as 7 fases serão inseridas aqui pelo JavaScript -->
-            </div>
+            <div class="accordion-container" id="phases-container"></div>
         </div>
     </main>
 
-    <!-- Player de Vídeo em Tela Cheia -->
+    <!-- Player de Vídeo em Tela Cheia (modos desktop e mobile) -->
     <div class="video-fullscreen-container" id="videoFullscreen">
-        <div class="video-fullscreen-header">
-            <div class="video-fullscreen-title">
-                <h2 id="fullscreenTitle">Título do Vídeo</h2>
-                <p id="fullscreenDescription">Descrição do vídeo será exibida aqui</p>
-            </div>
-            <button class="back-to-platform" id="backToPlatform">
-                <i class="fas fa-arrow-left"></i> Voltar para a Plataforma
-            </button>
-        </div>
-        
-        <div class="video-fullscreen-content">
-            <div class="video-fullscreen-player">
-                <div class="fullscreen-video-wrapper">
-                    <iframe class="fullscreen-video-player" id="fullscreenVideoPlayer" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <!-- Modo Desktop (versão 1) -->
+        <div class="desktop-player" id="desktopPlayer">
+            <div class="video-fullscreen-header">
+                <div class="video-fullscreen-title">
+                    <h2 id="fullscreenTitleDesktop">Título do Vídeo</h2>
+                    <p id="fullscreenDescriptionDesktop">Descrição do vídeo será exibida aqui</p>
                 </div>
+                <button class="back-to-platform" id="backToPlatformDesktop">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
             </div>
             
-            <div class="video-fullscreen-sidebar">
-                <h3 class="sidebar-title-fullscreen">Playlist do Curso</h3>
-                <div class="playlist-videos" id="playlistVideos">
-                    <!-- Vídeos da playlist serão inseridos aqui -->
+            <div class="video-fullscreen-content">
+                <div class="video-fullscreen-player">
+                    <div class="fullscreen-video-wrapper">
+                        <iframe class="fullscreen-video-player" id="fullscreenVideoPlayerDesktop" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
                 </div>
                 
-                <div class="video-progress">
-                    <div class="progress-label">Progresso do Curso</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill"></div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 0.8rem; color: var(--text-secondary); font-size: 0.85rem;">
-                        <span>65% concluído</span>
-                        <span>8/12 vídeos</span>
+                <div class="video-fullscreen-sidebar">
+                    <h3 class="sidebar-title-fullscreen">Playlist do Curso</h3>
+                    <div class="playlist-videos" id="playlistVideosDesktop"></div>
+                    <div class="video-progress">
+                        <div class="progress-label">Progresso do Curso</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.8rem; color: var(--text-secondary); font-size: 0.8rem;">
+                            <span>65% concluído</span>
+                            <span>8/12 vídeos</span>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Modo Mobile (versão 2) -->
+        <div class="mobile-player" id="mobilePlayer">
+            <div class="video-fullscreen-header">
+                <button id="backToPlatformMobile"><i class="fas fa-arrow-left"></i></button>
+                <h2 id="fullscreenTitleMobile">Título do Vídeo</h2>
+                <button id="openPlaylistBtn"><i class="fas fa-list"></i></button>
+            </div>
+            
+            <div class="video-fullscreen-player">
+                <div class="fullscreen-video-wrapper">
+                    <iframe class="fullscreen-video-player" id="fullscreenVideoPlayerMobile" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <div class="video-info" id="videoInfoMobile">
+                <p id="fullscreenDescriptionMobile">Descrição do vídeo</p>
+                <div class="video-meta">
+                    <span id="videoDurationMobile"><i class="far fa-clock"></i> 00:00</span>
+                </div>
+            </div>
+
+            <div class="video-navigation">
+                <button id="prevVideoBtn" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+                <button id="nextVideoBtn" disabled>Próximo <i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </div>
 
-    <!-- Footer futurista -->
+    <!-- Playlist overlay para mobile -->
+    <div class="playlist-overlay" id="playlistOverlay">
+        <div class="playlist-header">
+            <h3>Playlist</h3>
+            <button id="closePlaylistBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="playlist-videos" id="playlistVideosMobile"></div>
+    </div>
+    <div class="overlay-backdrop" id="overlayBackdrop"></div>
+
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <p class="copyright">© 2026 Todos os direitos reservados</p>
-            </div>
+            <p class="copyright">© 2026 Todos os direitos reservados</p>
         </div>
     </footer>
 
     <script>
-        // Dados das fases conforme organização descrita no documento
+        // Dados das fases conforme organização original (completo)
         const PHASES = [
             {
                 id: "phase-1",
@@ -1697,34 +1712,27 @@
         // Criar partículas de luz
         function createLightParticles() {
             const particlesContainer = document.getElementById('lightParticles');
+            if (!particlesContainer) return;
+            particlesContainer.innerHTML = '';
             const particleCount = 12;
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('light-particle');
-                
-                // Tamanho aleatório
                 const size = Math.random() * 80 + 40;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
-                
-                // Posição aleatória
                 particle.style.left = `${Math.random() * 100}%`;
                 particle.style.top = `${Math.random() * 100}%`;
-                
-                // Cor aleatória
                 const colors = ['rgba(0, 217, 255, 0.3)', 'rgba(157, 78, 221, 0.2)', 'rgba(255, 77, 141, 0.2)'];
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 particle.style.background = `radial-gradient(circle, ${color}, transparent)`;
-                
-                // Atraso na animação
                 particle.style.animationDelay = `${Math.random() * 4}s`;
-                
                 particlesContainer.appendChild(particle);
             }
         }
 
-        // Renderizar Layout: Fases
+        // Renderizar fases
         function renderLayout() {
             const container = document.getElementById('phases-container');
             container.innerHTML = '';
@@ -1734,7 +1742,7 @@
                 phaseContainer.className = 'phase-container';
                 phaseContainer.setAttribute('data-phase', phase.phaseNumber);
                 phaseContainer.innerHTML = `
-                    <div class="phase-header">
+                    <button class="phase-header" aria-expanded="false">
                         <div class="phase-title">
                             <div class="phase-number">
                                 <span>${phase.number}</span>
@@ -1747,12 +1755,12 @@
                             </div>
                         </div>
                         <div class="phase-description">${phase.description}</div>
-                    </div>
+                    </button>
                     <div class="phase-content">
                         <div class="accordion-videos">
                             ${phase.cards.map(card => `
-                                <div class="accordion-item" style="margin-top: 1rem;">
-                                    <div class="accordion-header">
+                                <div class="accordion-item">
+                                    <button class="accordion-header" aria-expanded="false">
                                         <div class="accordion-title">
                                             <div class="accordion-icon">
                                                 <i class="fas ${card.icon}"></i>
@@ -1765,7 +1773,7 @@
                                         <div class="accordion-indicator">
                                             <i class="fas fa-chevron-down"></i>
                                         </div>
-                                    </div>
+                                    </button>
                                     <div class="accordion-content">
                                         <div class="accordion-videos">
                                             <div class="accordion-video-list">
@@ -1795,22 +1803,19 @@
             });
         }
 
-        // Mecanismo de Acordeão para fases
-        function setupPhaseAccordion() {
+        // Configurar accordions
+        function setupAccordions() {
             document.querySelectorAll('.phase-header').forEach(header => {
-                header.addEventListener('click', function() {
-                    const phaseContainer = this.parentElement;
-                    const phaseContent = this.nextElementSibling;
+                header.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    const content = this.nextElementSibling;
                     const indicator = this.querySelector('.phase-indicator i');
-                    
-                    // Alternar classe active no header
-                    this.classList.toggle('active');
-                    
-                    // Alternar classe active no conteúdo
-                    phaseContent.classList.toggle('active');
-                    
-                    // Alternar ícone
-                    if (this.classList.contains('active')) {
+
+                    this.setAttribute('aria-expanded', !isExpanded);
+                    content.classList.toggle('active');
+
+                    if (!isExpanded) {
                         indicator.classList.remove('fa-chevron-down');
                         indicator.classList.add('fa-chevron-up');
                     } else {
@@ -1819,26 +1824,18 @@
                     }
                 });
             });
-        }
 
-        // Mecanismo de Acordeão para cards dentro das fases
-        function setupCardAccordion() {
-            document.querySelectorAll('.phase-content .accordion-header').forEach(header => {
+            document.querySelectorAll('.accordion-header').forEach(header => {
                 header.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    
-                    const accordionItem = this.parentElement;
-                    const accordionContent = this.nextElementSibling;
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    const content = this.nextElementSibling;
                     const indicator = this.querySelector('.accordion-indicator i');
-                    
-                    // Alternar classe active no header
-                    this.classList.toggle('active');
-                    
-                    // Alternar classe active no conteúdo
-                    accordionContent.classList.toggle('active');
-                    
-                    // Alternar ícone
-                    if (this.classList.contains('active')) {
+
+                    this.setAttribute('aria-expanded', !isExpanded);
+                    content.classList.toggle('active');
+
+                    if (!isExpanded) {
                         indicator.classList.remove('fa-chevron-down');
                         indicator.classList.add('fa-chevron-up');
                     } else {
@@ -1849,15 +1846,13 @@
             });
         }
 
-        // Player de vídeo em tela cheia
+        // Player de vídeo (unificado)
         let currentVideoIndex = 0;
         let currentPlaylist = [];
-        let isVideoPlaying = false;
 
         function setupVideoPlayer() {
-            // Para todos os itens de vídeo
-            document.querySelectorAll('.accordion-video-item').forEach((videoItem, index) => {
-                videoItem.addEventListener('click', function(e) {
+            document.querySelectorAll('.accordion-video-item').forEach(item => {
+                item.addEventListener('click', function(e) {
                     e.stopPropagation();
                     
                     const videoTitle = this.getAttribute('data-video');
@@ -1865,12 +1860,10 @@
                     const videoDuration = this.getAttribute('data-duration');
                     const videoSrc = this.getAttribute('data-src');
                     
-                    // Coletar todos os vídeos do mesmo card para a playlist
                     const videoGroup = this.closest('.accordion-video-list');
                     if (videoGroup) {
                         currentPlaylist = [];
-                        const allVideos = videoGroup.querySelectorAll('.accordion-video-item');
-                        allVideos.forEach((vid, idx) => {
+                        videoGroup.querySelectorAll('.accordion-video-item').forEach((vid, idx) => {
                             if (vid === this) currentVideoIndex = idx;
                             currentPlaylist.push({
                                 title: vid.getAttribute('data-video'),
@@ -1881,97 +1874,146 @@
                         });
                     }
                     
-                    openVideoFullscreen(videoTitle, videoDescription, videoSrc, videoDuration);
+                    openVideoFullscreen(videoTitle, videoDescription, videoDuration, videoSrc);
                 });
             });
         }
 
-        function openVideoFullscreen(title, description, src, duration) {
-            // Fechar vídeo anterior se existir
-            closeVideoFullscreen();
+        function openVideoFullscreen(title, description, duration, src) {
+            // Atualiza elementos do modo desktop
+            document.getElementById('fullscreenTitleDesktop').textContent = title;
+            document.getElementById('fullscreenDescriptionDesktop').textContent = description;
+            document.getElementById('fullscreenVideoPlayerDesktop').src = src + '?autoplay=1';
+
+            // Atualiza elementos do modo mobile
+            document.getElementById('fullscreenTitleMobile').textContent = title;
+            document.getElementById('fullscreenDescriptionMobile').textContent = description;
+            document.getElementById('videoDurationMobile').innerHTML = `<i class="far fa-clock"></i> ${duration}`;
+            document.getElementById('fullscreenVideoPlayerMobile').src = src + '?autoplay=1';
             
-            // Atualizar informações do player
-            document.getElementById('fullscreenTitle').textContent = title;
-            document.getElementById('fullscreenDescription').textContent = description;
-            document.getElementById('fullscreenVideoPlayer').src = src + '?autoplay=1';
-            
-            // Atualizar playlist
             updatePlaylist();
+            updateNavigationButtons();
             
-            // Mostrar player em tela cheia
             document.getElementById('videoFullscreen').classList.add('active');
             
-            // Focar no player para permitir controles de teclado
-            document.getElementById('fullscreenVideoPlayer').focus();
-            
-            isVideoPlaying = true;
+            closePlaylistOverlay();
         }
 
         function updatePlaylist() {
-            const playlistContainer = document.getElementById('playlistVideos');
-            playlistContainer.innerHTML = '';
+            const desktopContainer = document.getElementById('playlistVideosDesktop');
+            const mobileContainer = document.getElementById('playlistVideosMobile');
             
-            currentPlaylist.forEach((video, index) => {
-                const videoItem = document.createElement('div');
-                videoItem.className = `playlist-video-item ${index === currentVideoIndex ? 'active' : ''}`;
-                videoItem.innerHTML = `
-                    <h5>${video.title}</h5>
-                    <div class="playlist-video-meta">
-                        <span>${video.duration}</span>
-                        <span>${index === currentVideoIndex ? '<i class="fas fa-play"></i> Assistindo' : ''}</span>
-                    </div>
-                `;
-                
-                videoItem.addEventListener('click', () => {
-                    currentVideoIndex = index;
-                    document.getElementById('fullscreenTitle').textContent = video.title;
-                    document.getElementById('fullscreenDescription').textContent = video.description;
-                    document.getElementById('fullscreenVideoPlayer').src = video.src + '?autoplay=1';
-                    updatePlaylist();
+            if (desktopContainer) {
+                desktopContainer.innerHTML = '';
+                currentPlaylist.forEach((video, index) => {
+                    const item = createPlaylistItem(video, index, 'desktop');
+                    desktopContainer.appendChild(item);
                 });
-                
-                playlistContainer.appendChild(videoItem);
+            }
+            
+            if (mobileContainer) {
+                mobileContainer.innerHTML = '';
+                currentPlaylist.forEach((video, index) => {
+                    const item = createPlaylistItem(video, index, 'mobile');
+                    mobileContainer.appendChild(item);
+                });
+            }
+        }
+
+        function createPlaylistItem(video, index, mode) {
+            const div = document.createElement('div');
+            div.className = `playlist-video-item ${index === currentVideoIndex ? 'active' : ''}`;
+            div.innerHTML = `
+                <h5>${video.title}</h5>
+                <div class="playlist-video-meta">
+                    <span>${video.duration}</span>
+                    <span>${index === currentVideoIndex ? '<i class="fas fa-play"></i> Assistindo' : ''}</span>
+                </div>
+            `;
+            div.addEventListener('click', () => {
+                currentVideoIndex = index;
+                loadCurrentVideo();
+                updatePlaylist();
+                updateNavigationButtons();
+                if (mode === 'mobile' && window.innerWidth < 768) {
+                    closePlaylistOverlay();
+                }
             });
+            return div;
+        }
+
+        function loadCurrentVideo() {
+            const video = currentPlaylist[currentVideoIndex];
+            document.getElementById('fullscreenTitleDesktop').textContent = video.title;
+            document.getElementById('fullscreenDescriptionDesktop').textContent = video.description;
+            document.getElementById('fullscreenVideoPlayerDesktop').src = video.src + '?autoplay=1';
+            
+            document.getElementById('fullscreenTitleMobile').textContent = video.title;
+            document.getElementById('fullscreenDescriptionMobile').textContent = video.description;
+            document.getElementById('videoDurationMobile').innerHTML = `<i class="far fa-clock"></i> ${video.duration}`;
+            document.getElementById('fullscreenVideoPlayerMobile').src = video.src + '?autoplay=1';
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevVideoBtn');
+            const nextBtn = document.getElementById('nextVideoBtn');
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentVideoIndex === 0;
+                nextBtn.disabled = currentVideoIndex === currentPlaylist.length - 1;
+            }
         }
 
         function closeVideoFullscreen() {
             document.getElementById('videoFullscreen').classList.remove('active');
-            document.getElementById('fullscreenVideoPlayer').src = '';
-            isVideoPlaying = false;
+            document.getElementById('fullscreenVideoPlayerDesktop').src = '';
+            document.getElementById('fullscreenVideoPlayerMobile').src = '';
+            closePlaylistOverlay();
         }
 
-        // Controles do player
-        document.getElementById('backToPlatform').addEventListener('click', closeVideoFullscreen);
-        
-        // Fechar com a tecla ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && document.getElementById('videoFullscreen').classList.contains('active')) {
-                closeVideoFullscreen();
+        // Controles do modo desktop
+        document.getElementById('backToPlatformDesktop').addEventListener('click', closeVideoFullscreen);
+
+        // Controles do modo mobile
+        document.getElementById('backToPlatformMobile').addEventListener('click', closeVideoFullscreen);
+        document.getElementById('openPlaylistBtn').addEventListener('click', openPlaylistOverlay);
+        document.getElementById('closePlaylistBtn').addEventListener('click', closePlaylistOverlay);
+        document.getElementById('overlayBackdrop').addEventListener('click', closePlaylistOverlay);
+
+        document.getElementById('prevVideoBtn').addEventListener('click', () => {
+            if (currentVideoIndex > 0) {
+                currentVideoIndex--;
+                loadCurrentVideo();
+                updatePlaylist();
+                updateNavigationButtons();
             }
-            
-            // Controles de teclado para o player
-            if (document.getElementById('videoFullscreen').classList.contains('active')) {
-                switch(e.key) {
-                    case 'ArrowLeft':
-                        if (currentVideoIndex > 0) {
-                            currentVideoIndex--;
-                            const video = currentPlaylist[currentVideoIndex];
-                            document.getElementById('fullscreenTitle').textContent = video.title;
-                            document.getElementById('fullscreenDescription').textContent = video.description;
-                            document.getElementById('fullscreenVideoPlayer').src = video.src + '?autoplay=1';
-                            updatePlaylist();
-                        }
-                        break;
-                    case 'ArrowRight':
-                        if (currentVideoIndex < currentPlaylist.length - 1) {
-                            currentVideoIndex++;
-                            const video = currentPlaylist[currentVideoIndex];
-                            document.getElementById('fullscreenTitle').textContent = video.title;
-                            document.getElementById('fullscreenDescription').textContent = video.description;
-                            document.getElementById('fullscreenVideoPlayer').src = video.src + '?autoplay=1';
-                            updatePlaylist();
-                        }
-                        break;
+        });
+
+        document.getElementById('nextVideoBtn').addEventListener('click', () => {
+            if (currentVideoIndex < currentPlaylist.length - 1) {
+                currentVideoIndex++;
+                loadCurrentVideo();
+                updatePlaylist();
+                updateNavigationButtons();
+            }
+        });
+
+        function openPlaylistOverlay() {
+            document.getElementById('playlistOverlay').classList.add('active');
+            document.getElementById('overlayBackdrop').classList.add('active');
+        }
+
+        function closePlaylistOverlay() {
+            document.getElementById('playlistOverlay').classList.remove('active');
+            document.getElementById('overlayBackdrop').classList.remove('active');
+        }
+
+        // Tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('videoFullscreen').classList.contains('active')) {
+                    closeVideoFullscreen();
+                } else {
+                    closePlaylistOverlay();
                 }
             }
         });
@@ -1981,50 +2023,46 @@
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const phaseContainers = document.querySelectorAll('.phase-container');
-                    
-                    phaseContainers.forEach(phaseContainer => {
-                        const phaseTitle = phaseContainer.querySelector('.phase-title-text h3').textContent.toLowerCase();
-                        const phaseDesc = phaseContainer.querySelector('.phase-description').textContent.toLowerCase();
-                        
-                        // Verificar também nos cards dentro da fase
-                        let hasMatchInCards = false;
-                        const cards = phaseContainer.querySelectorAll('.accordion-item');
+                    const term = this.value.toLowerCase().trim();
+                    const phases = document.querySelectorAll('.phase-container');
+
+                    phases.forEach(phase => {
+                        let phaseMatch = false;
+                        const phaseTitle = phase.querySelector('.phase-title-text h3').textContent.toLowerCase();
+                        const phaseDesc = phase.querySelector('.phase-description').textContent.toLowerCase();
+
+                        if (phaseTitle.includes(term) || phaseDesc.includes(term)) {
+                            phaseMatch = true;
+                        }
+
+                        const cards = phase.querySelectorAll('.accordion-item');
                         cards.forEach(card => {
                             const cardTitle = card.querySelector('.accordion-title-text h4').textContent.toLowerCase();
                             const cardDesc = card.querySelector('.accordion-title-text p').textContent.toLowerCase();
-                            
-                            if (cardTitle.includes(searchTerm) || cardDesc.includes(searchTerm)) {
-                                hasMatchInCards = true;
-                            }
+                            let cardMatch = cardTitle.includes(term) || cardDesc.includes(term);
+
+                            const videos = card.querySelectorAll('.accordion-video-item');
+                            videos.forEach(video => {
+                                const videoTitle = video.getAttribute('data-video').toLowerCase();
+                                if (videoTitle.includes(term)) cardMatch = true;
+                            });
+
+                            if (cardMatch) phaseMatch = true;
                         });
-                        
-                        if (phaseTitle.includes(searchTerm) || phaseDesc.includes(searchTerm) || hasMatchInCards) {
-                            phaseContainer.style.display = 'block';
-                        } else {
-                            phaseContainer.style.display = 'none';
-                        }
+
+                        phase.style.display = (term === '' || phaseMatch) ? 'block' : 'none';
                     });
                 });
             }
         }
 
-        // Inicializar
+        // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             createLightParticles();
-            
-            // Renderizar layout
             renderLayout();
-            
-            // Configurar funcionalidades
-            setupPhaseAccordion();
-            setupCardAccordion();
+            setupAccordions();
             setupVideoPlayer();
             setupSearch();
-            
-            // Todas as fases iniciam recolhidas (não abrimos nenhuma por padrão)
-            // Remove a abertura automática da primeira fase
         });
     </script>
 </body>
