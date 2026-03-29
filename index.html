@@ -11,11 +11,11 @@
         /* --- Variáveis Sci-Fi & Cyberpunk --- */
         :root {
             /* Tema Claro (Corporate Sci-Fi) - Padrão */
-            --primary-color: #0055FF; /* Electric Blue */
+            --primary-color: #0055FF; 
             --primary-light: rgba(0, 85, 255, 0.08);
-            --secondary-color: #7000FF; /* Deep Tech Purple */
-            --bg-body: #F0F4F8; /* Gelo Metálico */
-            --bg-surface: rgba(255, 255, 255, 0.85); /* Translúcido para Glassmorphism */
+            --secondary-color: #7000FF; 
+            --bg-body: #F0F4F8; 
+            --bg-surface: rgba(255, 255, 255, 0.85); 
             --bg-card: #FFFFFF;
             --text-main: #0B132B;
             --text-muted: #5C6B8A;
@@ -36,11 +36,11 @@
 
         /* Tema Escuro (Neon Cyberpunk) */
         [data-theme="dark"] {
-            --primary-color: #00F0FF; /* Neon Cyan */
+            --primary-color: #00F0FF; 
             --primary-light: rgba(0, 240, 255, 0.1);
-            --secondary-color: #B026FF; /* Holo Purple */
-            --bg-body: #050508; /* Dark Abyss */
-            --bg-surface: rgba(13, 17, 26, 0.8); /* Deep Tech Blue/Black */
+            --secondary-color: #B026FF; 
+            --bg-body: #050508; 
+            --bg-surface: rgba(13, 17, 26, 0.8); 
             --bg-card: #0D111A;
             --text-main: #E2E8F0;
             --text-muted: #8B949E;
@@ -80,7 +80,7 @@
             display: flex;
             width: 100%;
             min-height: 100vh;
-            flex-direction: row; /* Padrão para Desktop */
+            flex-direction: row; 
         }
 
         /* --- Sidebar Futurista (Glassmorphism) --- */
@@ -125,7 +125,7 @@
             100% { left: 200%; }
         }
 
-        .brand i {
+        .brand i.main-icon {
             font-size: 2.8rem;
             color: var(--primary-color);
             margin-bottom: 1rem;
@@ -149,6 +149,11 @@
             letter-spacing: 2px;
         }
 
+        /* Botão do Menu Mobile (Escondido no Desktop) */
+        .mobile-menu-btn {
+            display: none;
+        }
+
         .nav-menu {
             padding: 1.5rem 1rem;
             overflow-y: auto;
@@ -156,6 +161,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
         }
 
         .nav-menu::-webkit-scrollbar { width: 4px; }
@@ -299,7 +305,7 @@
             margin: 0 auto;
         }
 
-        /* --- Painel da Fase --- */
+        /* --- Painel da Fase & Welcome Screen --- */
         .phase-hero {
             background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
             padding: 3rem;
@@ -356,6 +362,25 @@
             max-width: 900px;
             position: relative;
             z-index: 2;
+        }
+
+        /* Bem Vindo Centralizado */
+        .welcome-hero {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            border-left-width: 1px;
+            border-bottom: 4px solid var(--primary-color);
+        }
+
+        .welcome-hero i.welcome-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(var(--glow-primary));
         }
 
         /* --- Grid de Módulos (Cards Tech) --- */
@@ -646,7 +671,7 @@
         }
 
         @media (max-width: 768px) {
-            /* A MÁGICA ACONTECE AQUI: Empilhar container em dispositivos móveis */
+            /* Empilhar container em dispositivos móveis */
             .app-container { 
                 flex-direction: column; 
             }
@@ -654,40 +679,79 @@
             .sidebar {
                 width: 100%;
                 height: auto;
-                position: relative; /* Remove o fixed para fluir com a página */
+                position: relative; 
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
-                z-index: 10;
+                z-index: 50;
             }
 
             .brand {
-                padding: 1.5rem;
+                padding: 1rem 1.5rem;
                 flex-direction: row;
-                justify-content: center;
+                justify-content: space-between; /* Espaço entre titulo e hamburger */
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .brand-info {
+                display: flex;
+                align-items: center;
                 gap: 1rem;
             }
 
-            .brand i { margin-bottom: 0; font-size: 2rem; }
+            .brand i.main-icon { margin-bottom: 0; font-size: 2rem; }
+            .brand h1 { font-size: 1.2rem; text-align: left; }
             .brand p { display: none; }
 
+            /* Ativa o Botão Hamburger */
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                background-color: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                color: var(--primary-color);
+                font-size: 1.4rem;
+                cursor: pointer;
+                transition: var(--transition);
+                box-shadow: var(--shadow-sm);
+            }
+
+            .mobile-menu-btn:active {
+                background-color: var(--primary-light);
+            }
+
+            /* Oculta o menu por padrão no mobile */
             .nav-menu {
-                flex-direction: row;
-                overflow-x: auto;
+                display: none; 
+                flex-direction: column;
+                width: 100%;
                 padding: 1rem;
-                gap: 0.8rem;
-                scrollbar-width: none;
-                /* Permite rolagem suave horizontal no celular */
-                -webkit-overflow-scrolling: touch; 
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background-color: var(--sidebar-bg);
+                backdrop-filter: blur(16px);
+                border-bottom: 1px solid var(--border-color);
+                box-shadow: var(--shadow-md);
+            }
+
+            /* Classe de exibição ativa via JS */
+            .nav-menu.open {
+                display: flex;
+                animation: fadeInDown 0.3s ease-out;
             }
 
             .nav-item {
-                white-space: nowrap;
-                padding: 0.8rem 1.2rem;
+                padding: 1rem;
                 border-radius: 8px;
-                font-size: 0.85rem;
+                font-size: 0.95rem;
                 align-items: center;
-                background-color: var(--bg-card);
-                border: 1px solid var(--border-color);
+                background-color: transparent;
+                border: 1px solid transparent;
             }
 
             .nav-item i { margin-top: 0; }
@@ -700,16 +764,22 @@
 
             .top-bar {
                 padding: 1rem 1.5rem;
-                flex-direction: column-reverse;
+                flex-direction: row; /* Mantém input de busca e dark mode alinhados no topo celular */
                 gap: 1rem;
             }
 
             .search-container { width: 100%; }
-            .theme-toggle { align-self: flex-end; }
+            
+            .theme-toggle { 
+                width: 44px; height: 44px; font-size: 1.1rem;
+            }
 
             .main-content { padding: 1.5rem 1rem; }
             .phase-hero { padding: 2rem 1.5rem; }
             .phase-hero h2 { font-size: 1.8rem; }
+            
+            .welcome-hero i.welcome-icon { font-size: 3rem; }
+            .welcome-hero h2 { font-size: 1.8rem; }
 
             .modal-overlay { padding: 0; }
             .modal-container { border-radius: 0; border: none; height: 100%; display: flex; flex-direction: column; }
@@ -722,12 +792,18 @@
     <div class="app-container">
         <aside class="sidebar">
             <div class="brand">
-                <i class="fa-solid fa-microchip"></i>
-                <div>
-                    <h1>Sistema de<br>Aprendizagem Digital</h1>
-                    <p>Terminal Virtual</p>
+                <div class="brand-info">
+                    <i class="fa-solid fa-microchip main-icon"></i>
+                    <div>
+                        <h1>Sistema de<br>Aprendizagem Digital</h1>
+                        <p>Terminal Virtual</p>
+                    </div>
                 </div>
+                <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Abrir Menu de Fases">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
+            
             <nav class="nav-menu" id="navMenu">
                 </nav>
         </aside>
@@ -736,7 +812,7 @@
             <div class="top-bar">
                 <div class="search-container">
                     <i class="fa-solid fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Efetuar varredura por módulos, aulas ou conceitos...">
+                    <input type="text" id="searchInput" placeholder="Varredura por aulas, módulos...">
                 </div>
                 <button id="themeToggle" class="theme-toggle" aria-label="Alternar interface">
                     <i class="fa-solid fa-moon"></i>
@@ -762,7 +838,7 @@
     </div>
 
     <script>
-        // Array rigorosamente preservado (100% dos dados mantidos)
+        // Array com 100% dos dados mantidos intactos
         const PHASES = [
             {
                 id: "phase-1", number: "1", phaseNumber: "1",
@@ -860,7 +936,7 @@
             {
                 id: "phase-3", number: "3", phaseNumber: "3",
                 title: "Fase 3: Conectividade e Internet",
-                description: "O aluno descobre como as máquinas conversam entre si e como acessamos o mundo. Aprende sobre a evolução das redes, dispositivos de rede, tecnologias wireless e a infraestrutura da web.",
+                description: "O aluno descobre como as máquinas conversam entre si e como acessamos o mundo. Aprende sobre a evolução das redes, dispositivos de rede, technologies wireless e a infraestrutura da web.",
                 icon: "fa-wifi",
                 cards: [
                     {
@@ -1225,6 +1301,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const navMenu = document.getElementById('navMenu');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const dynamicContent = document.getElementById('dynamicContent');
             const searchInput = document.getElementById('searchInput');
             const modal = document.getElementById('videoModal');
@@ -1234,10 +1311,10 @@
             const themeToggleBtn = document.getElementById('themeToggle');
             const rootElement = document.documentElement;
             
-            let activePhaseIndex = 0;
+            // Alterado para NULL: Página carrega sem fase pré-selecionada
+            let activePhaseIndex = null;
 
             // --- Gerenciador de Tema (Forçando Claro por Padrão) ---
-            // Substituído 'dark' por 'light' como default caso não haja histórico no dispositivo
             const savedTheme = localStorage.getItem('app-theme') || 'light';
             rootElement.setAttribute('data-theme', savedTheme);
             updateThemeIcon(savedTheme);
@@ -1259,16 +1336,55 @@
                 }
             }
 
-            // --- Navegação Lateral ---
+            // --- Controle do Menu Sanduíche Mobile ---
+            mobileMenuBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('open');
+                const icon = mobileMenuBtn.querySelector('i');
+                if(navMenu.classList.contains('open')){
+                    icon.classList.replace('fa-bars', 'fa-times');
+                } else {
+                    icon.classList.replace('fa-times', 'fa-bars');
+                }
+            });
+
+            function closeMobileMenu() {
+                if(window.innerWidth <= 768 && navMenu.classList.contains('open')) {
+                    navMenu.classList.remove('open');
+                    mobileMenuBtn.querySelector('i').classList.replace('fa-times', 'fa-bars');
+                }
+            }
+
+            // --- Tela de Boas Vindas (Estado Inicial) ---
+            function renderWelcome() {
+                const isMobile = window.innerWidth <= 768;
+                const instrucaoTexto = isMobile 
+                    ? "Selecione uma etapa no menu superior ou use a varredura para buscar aulas."
+                    : "Selecione uma etapa no painel lateral ou use a varredura global para encontrar uma aula específica.";
+                
+                dynamicContent.innerHTML = `
+                    <div class="welcome-hero">
+                        <i class="fa-solid fa-satellite-dish welcome-icon"></i>
+                        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: var(--glow-text);">Terminal Conectado</h2>
+                        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 500px;">
+                            ${instrucaoTexto}
+                        </p>
+                    </div>
+                `;
+            }
+
+            // --- Navegação Lateral / Mobile ---
             function initNav() {
                 navMenu.innerHTML = ''; 
                 PHASES.forEach((phase, index) => {
                     const navItem = document.createElement('div');
-                    navItem.className = `nav-item ${index === activePhaseIndex ? 'active' : ''}`;
+                    // Inicialmente nenhuma classe 'active'
+                    navItem.className = `nav-item`;
                     navItem.innerHTML = `<i class="fa-solid ${phase.icon}"></i> <span>${phase.title}</span>`;
                     
                     navItem.addEventListener('click', () => {
                         searchInput.value = '';
+                        closeMobileMenu(); // Fecha o menu sanduíche no mobile
+                        
                         if (activePhaseIndex === index) return;
                         
                         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -1342,11 +1458,22 @@
             searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.toLowerCase().trim();
                 
+                // Se a busca for limpa
                 if (query === '') {
-                    renderPhase(PHASES[activePhaseIndex]);
+                    if(activePhaseIndex !== null) {
+                        // Restaura a visualização da aba que estava ativa
+                        renderPhase(PHASES[activePhaseIndex]);
+                        // Devolve a classe visual pro menu
+                        const items = document.querySelectorAll('.nav-item');
+                        if(items[activePhaseIndex]) items[activePhaseIndex].classList.add('active');
+                    } else {
+                        // Se não tinha aba ativa, volta pra tela de bem vindo
+                        renderWelcome();
+                    }
                     return;
                 }
 
+                // Tira foco visual do menu durante a pesquisa global
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
                 let resultsHTML = '';
@@ -1423,9 +1550,9 @@
                 if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
             });
 
-            // --- Boot Sequence ---
+            // --- Boot Sequence (Inicializa Interface e carrega o Vazio) ---
             initNav();
-            renderPhase(PHASES[0]);
+            renderWelcome(); // Garante o carregamento inicial sem aba ativada
         });
     </script>
 </body>
