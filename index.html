@@ -670,29 +670,19 @@
             .modules-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
         }
 
-        /* --- NOVO: Correção Específica para Tablets (Ocultação da Fase 7 no Menu) --- */
-        /* Esta regra não afeta desktops nem smartphones, apenas telas de médio porte */
-        @media (min-width: 769px) and (max-width: 1024px) {
+        /* --- NOVO: Correção Específica para Tablets (Paisagem e Retrato) --- */
+        /* Esta regra não afeta desktops nem smartphones. Usa detecção de toque (pointer: coarse)
+           para focar estritamente em iPads e Tablets até 1366px de largura (ex: iPad Pro em landscape). */
+        @media (min-width: 769px) and (max-width: 1366px) and (pointer: coarse) {
             .sidebar {
-                height: 100vh;
-                height: 100dvh; /* Evita corte por barras de navegação nativas em tablets */
-            }
-            .brand {
-                padding: 1.5rem 1rem; /* Reduz espaço vertical excessivo do cabeçalho */
-            }
-            .brand i.main-icon {
-                font-size: 2.2rem;
-                margin-bottom: 0.5rem;
-            }
-            .brand h1 {
-                font-size: 1.3rem;
+                height: auto; /* Anula o 100vh que causa o corte do bug do iOS Safari */
+                top: 0;
+                bottom: 0; /* Trava a barra na altura *visual* real disponível da tela do tablet */
             }
             .nav-menu {
-                padding-bottom: 6rem; /* Buffer generoso no final do scroll para garantir visibilidade da Fase 7 */
-                -webkit-overflow-scrolling: touch; /* Habilita scroll físico nativo fluido no iOS (iPad) */
-            }
-            .nav-item {
-                padding: 0.8rem 1rem; /* Aproxima sutilmente os itens para liberar mais área visível */
+                min-height: 0; /* Força o Flexbox a reconhecer o limite do container e habilitar o scroll correto */
+                padding-bottom: 6rem; /* Empurra a Fase 7 para cima, afastando da área de navegação do sistema nativo */
+                -webkit-overflow-scrolling: touch; /* Melhora a inércia da rolagem no iOS */
             }
         }
 
