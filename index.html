@@ -670,6 +670,32 @@
             .modules-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
         }
 
+        /* --- NOVO: Correção Específica para Tablets (Ocultação da Fase 7 no Menu) --- */
+        /* Esta regra não afeta desktops nem smartphones, apenas telas de médio porte */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                height: 100vh;
+                height: 100dvh; /* Evita corte por barras de navegação nativas em tablets */
+            }
+            .brand {
+                padding: 1.5rem 1rem; /* Reduz espaço vertical excessivo do cabeçalho */
+            }
+            .brand i.main-icon {
+                font-size: 2.2rem;
+                margin-bottom: 0.5rem;
+            }
+            .brand h1 {
+                font-size: 1.3rem;
+            }
+            .nav-menu {
+                padding-bottom: 6rem; /* Buffer generoso no final do scroll para garantir visibilidade da Fase 7 */
+                -webkit-overflow-scrolling: touch; /* Habilita scroll físico nativo fluido no iOS (iPad) */
+            }
+            .nav-item {
+                padding: 0.8rem 1rem; /* Aproxima sutilmente os itens para liberar mais área visível */
+            }
+        }
+
         @media (max-width: 768px) {
             /* Empilhar container em dispositivos móveis */
             .app-container { 
