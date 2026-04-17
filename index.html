@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -32,6 +33,8 @@
             --radius-md: 12px;
             --radius-lg: 16px;
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --sidebar-width: 320px;
+            --content-max-width: 1440px;
         }
 
         /* Tema Escuro (Neon Cyberpunk) */
@@ -63,6 +66,10 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             background-color: var(--bg-body);
             color: var(--text-main);
@@ -73,19 +80,22 @@
                               linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
             background-size: 60px 60px;
             background-position: center center;
+            background-attachment: fixed;
         }
 
         /* --- Layout e Estrutura Principal --- */
         .app-container {
             display: flex;
             width: 100%;
+            max-width: 100vw;
             min-height: 100vh;
-            flex-direction: row; 
+            flex-direction: row;
+            overflow-x: clip;
         }
 
         /* --- Sidebar Futurista (Glassmorphism) --- */
         .sidebar {
-            width: 320px;
+            width: var(--sidebar-width);
             background-color: var(--sidebar-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -96,6 +106,7 @@
             top: 0;
             left: 0;
             height: 100vh;
+            min-width: 280px;
             z-index: 50;
             transition: var(--transition);
         }
@@ -216,20 +227,22 @@
 
         /* --- Conteúdo Principal --- */
         .main-wrapper {
-            margin-left: 320px;
+            margin-left: var(--sidebar-width);
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            width: calc(100% - 320px);
+            width: calc(100% - var(--sidebar-width));
+            min-width: 0;
         }
 
         /* Top Bar Translúcida */
         .top-bar {
-            padding: 1.5rem 3rem;
+            padding: 1.25rem clamp(1rem, 2.5vw, 3rem);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 2rem;
+            gap: 1rem 1.5rem;
+            flex-wrap: wrap;
             background-color: var(--bg-surface);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -241,8 +254,9 @@
         }
 
         .search-container {
-            flex-grow: 1;
-            max-width: 600px;
+            flex: 1 1 320px;
+            min-width: 0;
+            max-width: 720px;
             position: relative;
         }
 
@@ -298,20 +312,242 @@
             transform: rotate(15deg) scale(1.05);
         }
 
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1rem;
+            border-radius: 999px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-sm);
+            white-space: normal;
+            text-align: center;
+        }
+
+        .clear-search {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .clear-search.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .clear-search:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: var(--glow-primary);
+        }
+
+        mark.search-highlight {
+            background: rgba(112, 0, 255, 0.18);
+            color: var(--text-main);
+            padding: 0.1rem 0.3rem;
+            border-radius: 6px;
+            font-weight: 800;
+        }
+
+        .page-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 0 0 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card i {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .stat-card span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .resume-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-heading h3 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .section-heading p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .resume-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .resume-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            color: var(--text-main);
+        }
+
+        .resume-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-color);
+            box-shadow: var(--glow-primary);
+        }
+
+        .resume-card small {
+            display: block;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
+
+        .resume-card strong {
+            display: block;
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+
+        .resume-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .resume-empty {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .resume-empty i {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .scroll-top-btn {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 1.5rem;
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 60;
+        }
+
+        .scroll-top-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .lesson-item:focus-visible,
+        .theme-toggle:focus-visible,
+        .mobile-menu-btn:focus-visible,
+        .clear-search:focus-visible,
+        .scroll-top-btn:focus-visible,
+        .resume-card:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 3px;
+        }
+
         .main-content {
-            padding: 3rem;
-            max-width: 1400px;
+            padding: clamp(1rem, 2vw, 3rem);
+            max-width: var(--content-max-width);
             width: 100%;
             margin: 0 auto;
+            min-width: 0;
         }
 
         /* --- Painel da Fase & Welcome Screen --- */
         .phase-hero {
             background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
-            padding: 3rem;
+            padding: clamp(1.5rem, 3vw, 3rem);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-md);
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             border: 1px solid var(--border-color);
             border-left: 4px solid var(--primary-color);
             animation: fadeInDown 0.5s ease-out;
@@ -346,13 +582,14 @@
         }
 
         .phase-hero h2 {
-            font-size: 2.5rem;
+            font-size: clamp(1.6rem, 3vw, 2.5rem);
             font-weight: 800;
             color: var(--text-main);
             margin-bottom: 1rem;
             line-height: 1.2;
             letter-spacing: -1px;
             text-shadow: var(--glow-text);
+            word-break: break-word;
         }
 
         .phase-hero p {
@@ -386,8 +623,56 @@
         /* --- Grid de Módulos (Cards Tech) --- */
         .modules-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 2.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+            gap: clamp(1rem, 2vw, 2rem);
+            align-items: start;
+        }
+
+        .phase-view-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .phase-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: -1rem 0 2rem;
+        }
+
+        .phase-jump-list,
+        .phase-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .phase-chip,
+        .control-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .phase-chip:hover,
+        .control-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: var(--glow-primary);
+            transform: translateY(-2px);
         }
 
         .module-card {
@@ -401,16 +686,27 @@
             flex-direction: column;
             animation: fadeInUp 0.6s ease-out backwards;
             position: relative;
+            min-width: 0;
         }
 
         .module-card:hover {
             box-shadow: var(--glow-primary);
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             border-color: var(--border-hover);
         }
 
+        .module-card.collapsed .module-body {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .module-card.collapsed .module-header {
+            border-bottom-color: transparent;
+        }
+
         .module-header {
-            padding: 1.8rem;
+            padding: 1.4rem 1.5rem;
             border-bottom: 1px solid var(--border-color);
             background: linear-gradient(to bottom right, var(--bg-surface), transparent);
         }
@@ -427,9 +723,10 @@
 
         .module-header-top {
             display: flex;
-            align-items: center;
-            gap: 1.2rem;
+            align-items: flex-start;
+            gap: 1rem;
             margin-bottom: 1rem;
+            min-width: 0;
         }
 
         .icon-box {
@@ -458,6 +755,63 @@
             font-size: 0.95rem;
             color: var(--text-muted);
             line-height: 1.6;
+            margin-bottom: 0.9rem;
+        }
+
+        .module-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.75rem;
+            border-radius: 999px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            font-size: 0.78rem;
+            font-weight: 800;
+            border: 1px solid var(--border-color);
+        }
+
+        .module-toggle {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0.9rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .module-toggle:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--glow-primary);
+        }
+
+        .module-toggle i:last-child {
+            transition: var(--transition);
+        }
+
+        .module-card.collapsed .module-toggle i:last-child {
+            transform: rotate(-90deg);
+        }
+
+        .module-body {
+            max-height: 2200px;
+            opacity: 1;
+            transition: max-height 0.35s ease, opacity 0.3s ease;
         }
 
         /* --- Lista de Aulas / Terminais --- */
@@ -474,14 +828,16 @@
         .lesson-item {
             display: flex;
             align-items: center;
+            gap: 0.85rem;
             padding: 1rem;
-            border-radius: 8px;
+            border-radius: 12px;
             background-color: var(--bg-surface);
             cursor: pointer;
             transition: var(--transition);
             border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
+            min-width: 0;
         }
 
         .lesson-item::before {
@@ -508,10 +864,26 @@
             text-shadow: var(--glow-text);
         }
 
+        .lesson-index {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
         .play-icon {
             color: var(--text-muted);
-            font-size: 1.1rem;
-            margin-right: 1.2rem;
+            font-size: 1rem;
+            margin-right: 0;
             transition: var(--transition);
         }
 
@@ -522,18 +894,20 @@
 
         .lesson-title {
             font-size: 0.95rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-main);
-            white-space: nowrap;
+            display: -webkit-box;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            display: block;
             margin-bottom: 0.4rem;
         }
 
         .lesson-meta {
             display: flex;
-            gap: 1.2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
             font-size: 0.8rem;
             color: var(--text-muted);
             font-weight: 500;
@@ -544,6 +918,13 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
+        }
+
+        .lesson-cta {
+            color: var(--primary-color);
+            font-size: 0.78rem;
+            font-weight: 800;
+            white-space: nowrap;
         }
 
         .no-results {
@@ -586,12 +967,15 @@
             background-color: var(--bg-card);
             width: 100%;
             max-width: 1100px;
+            max-height: min(92vh, 900px);
             border-radius: var(--radius-md);
             overflow: hidden;
             box-shadow: var(--glow-primary);
             transform: scale(0.98);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             border: 1px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
         }
 
         .modal-overlay.active .modal-container {
@@ -599,10 +983,12 @@
         }
 
         .modal-header {
-            padding: 1.5rem 2rem;
+            padding: 1.25rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
             border-bottom: 1px solid var(--border-color);
             background: var(--bg-surface);
         }
@@ -663,63 +1049,83 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Responsividade Extrema (Smartphones e Tablets) --- */
-        @media (max-width: 1024px) {
-            .top-bar { padding: 1.5rem 2rem; }
-            .main-content { padding: 2rem; }
-            .modules-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+        /* --- Responsividade Global --- */
+        @media (min-width: 1600px) {
+            :root {
+                --content-max-width: 1600px;
+            }
+
+            .top-bar {
+                padding-inline: 2rem 3.5rem;
+            }
         }
 
-        /* --- NOVO: Correção Específica para Tablets (Paisagem e Retrato) --- */
-        /* Esta regra não afeta desktops nem smartphones. Usa detecção de toque (pointer: coarse)
-           para focar estritamente em iPads e Tablets até 1366px de largura (ex: iPad Pro em landscape). */
-        @media (min-width: 769px) and (max-width: 1366px) and (pointer: coarse) {
+        @media (max-width: 1200px) {
+            :root {
+                --sidebar-width: 280px;
+            }
+
+            .main-content {
+                padding: 1.5rem;
+            }
+
+            .modules-grid {
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            }
+        }
+
+        @media (min-width: 901px) and (max-width: 1366px) and (pointer: coarse) {
             .sidebar {
-                height: auto; /* Anula o 100vh que causa o corte do bug do iOS Safari */
+                height: auto;
                 top: 0;
-                bottom: 0; /* Trava a barra na altura *visual* real disponível da tela do tablet */
+                bottom: 0;
             }
+
             .nav-menu {
-                min-height: 0; /* Força o Flexbox a reconhecer o limite do container e habilitar o scroll correto */
-                padding-bottom: 6rem; /* Empurra a Fase 7 para cima, afastando da área de navegação do sistema nativo */
-                -webkit-overflow-scrolling: touch; /* Melhora a inércia da rolagem no iOS */
+                min-height: 0;
+                padding-bottom: 6rem;
+                -webkit-overflow-scrolling: touch;
             }
         }
 
-        @media (max-width: 768px) {
-            /* Empilhar container em dispositivos móveis */
-            .app-container { 
-                flex-direction: column; 
+        @media (max-width: 900px) {
+            body {
+                background-attachment: scroll;
             }
-            
+
+            .app-container {
+                flex-direction: column;
+            }
+
             .sidebar {
                 width: 100%;
+                min-width: 0;
                 height: auto;
-                position: relative; 
+                position: relative;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
                 z-index: 50;
             }
 
             .brand {
-                padding: 1rem 1.5rem;
+                padding: 1rem 1rem 1rem 1.25rem;
                 flex-direction: row;
-                justify-content: space-between; /* Espaço entre titulo e hamburger */
+                justify-content: space-between;
                 align-items: center;
                 gap: 1rem;
             }
-            
+
             .brand-info {
                 display: flex;
                 align-items: center;
-                gap: 1rem;
+                gap: 0.85rem;
+                min-width: 0;
             }
 
             .brand i.main-icon { margin-bottom: 0; font-size: 2rem; }
-            .brand h1 { font-size: 1.2rem; text-align: left; }
+            .brand h1 { font-size: 1.1rem; text-align: left; }
             .brand p { display: none; }
 
-            /* Ativa o Botão Hamburger */
             .mobile-menu-btn {
                 display: flex;
                 align-items: center;
@@ -734,17 +1140,19 @@
                 cursor: pointer;
                 transition: var(--transition);
                 box-shadow: var(--shadow-sm);
+                flex-shrink: 0;
             }
 
             .mobile-menu-btn:active {
                 background-color: var(--primary-light);
             }
 
-            /* Oculta o menu por padrão no mobile */
             .nav-menu {
-                display: none; 
+                display: none;
                 flex-direction: column;
                 width: 100%;
+                max-height: 70vh;
+                overflow-y: auto;
                 padding: 1rem;
                 position: absolute;
                 top: 100%;
@@ -755,14 +1163,13 @@
                 box-shadow: var(--shadow-md);
             }
 
-            /* Classe de exibição ativa via JS */
             .nav-menu.open {
                 display: flex;
                 animation: fadeInDown 0.3s ease-out;
             }
 
             .nav-item {
-                padding: 1rem;
+                padding: 0.9rem 1rem;
                 border-radius: 8px;
                 font-size: 0.95rem;
                 align-items: center;
@@ -779,27 +1186,118 @@
             }
 
             .top-bar {
-                padding: 1rem 1.5rem;
-                flex-direction: row; /* Mantém input de busca e dark mode alinhados no topo celular */
-                gap: 1rem;
+                align-items: stretch;
             }
 
-            .search-container { width: 100%; }
-            
-            .theme-toggle { 
-                width: 44px; height: 44px; font-size: 1.1rem;
+            .search-container {
+                max-width: none;
+                flex-basis: 100%;
             }
 
-            .main-content { padding: 1.5rem 1rem; }
-            .phase-hero { padding: 2rem 1.5rem; }
-            .phase-hero h2 { font-size: 1.8rem; }
-            
-            .welcome-hero i.welcome-icon { font-size: 3rem; }
-            .welcome-hero h2 { font-size: 1.8rem; }
+            .top-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
 
-            .modal-overlay { padding: 0; }
-            .modal-container { border-radius: 0; border: none; height: 100%; display: flex; flex-direction: column; }
-            .video-wrapper { flex-grow: 1; padding-bottom: 0; }
+            .status-pill {
+                flex: 1 1 200px;
+            }
+
+            .phase-toolbar,
+            .phase-controls,
+            .phase-jump-list {
+                width: 100%;
+            }
+
+            .phase-controls {
+                justify-content: space-between;
+            }
+
+            .phase-chip,
+            .control-btn {
+                flex: 1 1 180px;
+                justify-content: center;
+            }
+
+            .modal-overlay {
+                padding: 0.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .top-bar {
+                padding: 1rem;
+            }
+
+            .search-container input {
+                padding: 0.9rem 1rem 0.9rem 3rem;
+                font-size: 0.92rem;
+            }
+
+            .top-actions {
+                gap: 0.5rem;
+            }
+
+            .clear-search,
+            .theme-toggle {
+                width: 42px;
+                height: 42px;
+            }
+
+            .main-content {
+                padding: 1rem 0.85rem 1.25rem;
+            }
+
+            .welcome-hero {
+                min-height: auto;
+            }
+
+            .module-header,
+            .lesson-list {
+                padding: 1rem;
+            }
+
+            .module-header-top {
+                align-items: center;
+                gap: 0.85rem;
+            }
+
+            .icon-box {
+                width: 46px;
+                height: 46px;
+                font-size: 1.1rem;
+            }
+
+            .lesson-item {
+                align-items: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .lesson-cta {
+                width: 100%;
+                margin-left: 0;
+                padding-left: 3rem;
+            }
+
+            .modal-overlay {
+                padding: 0;
+            }
+
+            .modal-container {
+                border-radius: 0;
+                border: none;
+                height: 100dvh;
+                max-height: 100dvh;
+            }
+
+            .modal-header h3 {
+                font-size: 1rem;
+            }
+
+            .video-wrapper {
+                flex-grow: 1;
+                padding-bottom: 0;
+            }
         }
     </style>
 </head>
@@ -828,11 +1326,20 @@
             <div class="top-bar">
                 <div class="search-container">
                     <i class="fa-solid fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Varredura por aulas, módulos...">
+                    <input type="search" id="searchInput" placeholder="Busca inteligente por aulas, temas e módulos..." aria-label="Pesquisar aulas, módulos e temas" autocomplete="off" spellcheck="false" title="Use / para focar e Enter para abrir o primeiro resultado">
                 </div>
-                <button id="themeToggle" class="theme-toggle" aria-label="Alternar interface">
-                    <i class="fa-solid fa-moon"></i>
-                </button>
+                <div class="top-actions">
+                    <button id="clearSearch" class="clear-search" aria-label="Limpar busca">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="status-pill" id="resultCount">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>7 fases disponíveis</span>
+                    </div>
+                    <button id="themeToggle" class="theme-toggle" aria-label="Alternar interface">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
             </div>
 
             <main class="main-content" id="dynamicContent">
@@ -852,6 +1359,10 @@
                 </div>
         </div>
     </div>
+
+    <button id="scrollTopBtn" class="scroll-top-btn" aria-label="Voltar ao topo">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
 
     <script>
         // Array com 100% dos dados mantidos intactos
@@ -1325,10 +1836,228 @@
             const videoWrapper = document.getElementById('videoWrapper');
             const modalTitle = document.getElementById('modalTitle');
             const themeToggleBtn = document.getElementById('themeToggle');
+            const clearSearchBtn = document.getElementById('clearSearch');
+            const resultCount = document.getElementById('resultCount');
+            const scrollTopBtn = document.getElementById('scrollTopBtn');
             const rootElement = document.documentElement;
+            const RECENT_KEY = 'app-recent-lessons';
             
             // Alterado para NULL: Página carrega sem fase pré-selecionada
             let activePhaseIndex = null;
+
+            const platformStats = PHASES.reduce((acc, phase) => {
+                acc.phases += 1;
+                acc.cards += phase.cards.length;
+                phase.cards.forEach(card => {
+                    acc.lessons += card.videos.length;
+                });
+                return acc;
+            }, { phases: 0, cards: 0, lessons: 0 });
+
+            function escapeHTML(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function normalizeText(value) {
+                return String(value || '')
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .trim();
+            }
+
+            function getSearchTokens(value) {
+                return [...new Set(normalizeText(value).split(/\s+/).filter(Boolean))];
+            }
+
+            function escapeRegExp(value) {
+                return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            function highlightMatches(value, query) {
+                const safeValue = escapeHTML(value);
+                const tokens = [...new Set(String(query || '').trim().split(/\s+/).filter(token => token.length > 1))];
+
+                if (!tokens.length) {
+                    return safeValue;
+                }
+
+                const expression = tokens.map(escapeRegExp).join('|');
+                return safeValue.replace(new RegExp(`(${expression})`, 'gi'), '<mark class="search-highlight">$1</mark>');
+            }
+
+            function scoreMatch(tokens, sources) {
+                const normalizedSources = Object.fromEntries(
+                    Object.entries(sources).map(([key, content]) => [key, normalizeText(content)])
+                );
+
+                return tokens.reduce((score, token) => {
+                    if (normalizedSources.phaseTitle.includes(token)) score += 12;
+                    if (normalizedSources.phaseDescription.includes(token)) score += 8;
+                    if (normalizedSources.cardTitle.includes(token)) score += 28;
+                    if (normalizedSources.cardDescription.includes(token)) score += 10;
+                    if (normalizedSources.videoTitles.includes(token)) score += 18;
+                    return score;
+                }, 0);
+            }
+
+            function createSearchSuggestions() {
+                const suggestionValues = new Set();
+
+                PHASES.forEach(phase => {
+                    suggestionValues.add(phase.title);
+                    phase.cards.forEach(card => {
+                        suggestionValues.add(card.title);
+                        card.videos.slice(0, 2).forEach(video => suggestionValues.add(video.title));
+                    });
+                });
+
+                const datalist = document.createElement('datalist');
+                datalist.id = 'searchSuggestions';
+
+                Array.from(suggestionValues).slice(0, 80).forEach(value => {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    datalist.appendChild(option);
+                });
+
+                document.body.appendChild(datalist);
+                searchInput.setAttribute('list', 'searchSuggestions');
+            }
+
+            function updateStatusPill(label) {
+                resultCount.innerHTML = `<i class="fa-solid fa-signal"></i><span>${label}</span>`;
+                clearSearchBtn.classList.toggle('visible', searchInput.value.trim() !== '');
+            }
+
+            function getRecentLessons() {
+                try {
+                    return JSON.parse(localStorage.getItem(RECENT_KEY)) || [];
+                } catch {
+                    return [];
+                }
+            }
+
+            function saveRecentLesson(videoData) {
+                const recent = getRecentLessons().filter(item => item.src !== videoData.src);
+                recent.unshift({ ...videoData, watchedAt: new Date().toLocaleDateString('pt-BR') });
+                localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, 4)));
+            }
+
+            function buildStatsHTML(items) {
+                return `
+                    <section class="page-stats">
+                        ${items.map(item => `
+                            <div class="stat-card">
+                                <i class="fa-solid ${item.icon}"></i>
+                                <div>
+                                    <strong>${item.value}</strong>
+                                    <span>${item.label}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </section>
+                `;
+            }
+
+            function buildRecentLessonsHTML() {
+                const recent = getRecentLessons();
+
+                if (!recent.length) {
+                    return `
+                        <section class="resume-section">
+                            <div class="section-heading">
+                                <div>
+                                    <h3>Retome com facilidade</h3>
+                                    <p>Seu histórico recente aparecerá aqui para continuar exatamente de onde parou.</p>
+                                </div>
+                            </div>
+                            <div class="resume-empty">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <p>Abra uma aula e o sistema criará atalhos rápidos automaticamente.</p>
+                            </div>
+                        </section>
+                    `;
+                }
+
+                return `
+                    <section class="resume-section">
+                        <div class="section-heading">
+                            <div>
+                                <h3>Continue de onde parou</h3>
+                                <p>Acesso rápido às últimas aulas abertas.</p>
+                            </div>
+                        </div>
+                        <div class="resume-grid">
+                            ${recent.map(item => `
+                                <button class="resume-card" data-src="${item.src}" data-title="${escapeHTML(item.title)}">
+                                    <small>Último acesso: ${item.watchedAt}</small>
+                                    <strong>${escapeHTML(item.title)}</strong>
+                                    <div class="resume-meta">
+                                        <span><i class="fa-solid fa-bolt"></i> Continuar aula</span>
+                                    </div>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </section>
+                `;
+            }
+
+            function getPhaseSummary(phase) {
+                const lessons = phase.cards.reduce((total, card) => total + card.videos.length, 0);
+                return {
+                    cards: phase.cards.length,
+                    lessons
+                };
+            }
+
+            function getCardSummary(card) {
+                return {
+                    lessons: card.videos.length
+                };
+            }
+
+            function resetContentScroll() {
+                const topBar = document.querySelector('.top-bar');
+                const topOffset = topBar ? topBar.offsetHeight + 12 : 0;
+
+                requestAnimationFrame(() => {
+                    window.scrollTo({
+                        top: Math.max(dynamicContent.offsetTop - topOffset, 0),
+                        behavior: 'auto'
+                    });
+                });
+            }
+
+            function buildPhaseToolbarHTML(phase) {
+                return `
+                    <section class="phase-toolbar">
+                        <div class="phase-jump-list">
+                            ${phase.cards.map(card => `
+                                <button class="phase-chip" type="button" data-target="${card.id}" aria-label="Ir para ${escapeHTML(card.title)}">
+                                    <i class="fa-solid fa-location-arrow"></i>
+                                    <span>${escapeHTML(card.title)}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="phase-controls">
+                            <button class="control-btn" type="button" data-action="expand">
+                                <i class="fa-solid fa-square-plus"></i>
+                                <span>Expandir tudo</span>
+                            </button>
+                            <button class="control-btn" type="button" data-action="collapse">
+                                <i class="fa-solid fa-compress"></i>
+                                <span>Compactar</span>
+                            </button>
+                        </div>
+                    </section>
+                `;
+            }
 
             // --- Gerenciador de Tema (Forçando Claro por Padrão) ---
             const savedTheme = localStorage.getItem('app-theme') || 'light';
@@ -1374,17 +2103,24 @@
             function renderWelcome() {
                 const isMobile = window.innerWidth <= 768;
                 const instrucaoTexto = isMobile 
-                    ? "Selecione uma etapa no menu superior ou use a varredura para buscar aulas."
-                    : "Selecione uma etapa no painel lateral ou use a varredura global para encontrar uma aula específica.";
-                
+                    ? "Selecione uma etapa no menu superior ou use a busca para encontrar aulas rapidamente."
+                    : "Escolha uma fase no painel lateral ou use a busca global para localizar qualquer aula em segundos.";
+
+                updateStatusPill(`${platformStats.phases} fases disponíveis`);
                 dynamicContent.innerHTML = `
-                    <div class="welcome-hero">
+                    <div class="phase-hero welcome-hero">
                         <i class="fa-solid fa-satellite-dish welcome-icon"></i>
-                        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: var(--glow-text);">Terminal Conectado</h2>
-                        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 500px;">
+                        <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: var(--glow-text);">Aprendizado mais rápido e intuitivo</h2>
+                        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 720px;">
                             ${instrucaoTexto}
                         </p>
                     </div>
+                    ${buildStatsHTML([
+                        { icon: 'fa-layer-group', value: platformStats.phases, label: 'Fases disponíveis' },
+                        { icon: 'fa-cubes-stacked', value: platformStats.cards, label: 'Trilhas organizadas' },
+                        { icon: 'fa-circle-play', value: platformStats.lessons, label: 'Aulas prontas' }
+                    ])}
+                    ${buildRecentLessonsHTML()}
                 `;
             }
 
@@ -1408,6 +2144,7 @@
                         
                         activePhaseIndex = index;
                         renderPhase(PHASES[activePhaseIndex]);
+                        resetContentScroll();
                     });
                     
                     navMenu.appendChild(navItem);
@@ -1415,42 +2152,59 @@
             }
 
             // --- Construtor de Módulos (Cards) ---
-            function buildCardsHTML(phase, cardsArray) {
+            function buildCardsHTML(phase, cardsArray, options = {}) {
+                const { collapsible = false, expandFirst = false, showPhaseContext = false, highlightQuery = '' } = options;
                 let cardsHTML = '';
-                cardsArray.forEach(card => {
+
+                cardsArray.forEach((card, index) => {
+                    const cardSummary = getCardSummary(card);
+                    const isCollapsed = collapsible ? !(expandFirst && index === 0) : false;
                     let lessonsHTML = '';
-                    card.videos.forEach(video => {
+
+                    card.videos.forEach((video, videoIndex) => {
+                        const safeTitleText = escapeHTML(video.title);
+                        const highlightedVideoTitle = highlightMatches(video.title, highlightQuery);
                         lessonsHTML += `
-                            <li class="lesson-item" data-src="${video.src}" data-title="${video.title}">
+                            <li class="lesson-item" tabindex="0" role="button" aria-label="Abrir aula ${safeTitleText}" data-src="${video.src}" data-title="${safeTitleText}">
+                                <span class="lesson-index">${String(videoIndex + 1).padStart(2, '0')}</span>
                                 <i class="fa-solid fa-play play-icon"></i>
                                 <div class="lesson-content">
-                                    <span class="lesson-title">${video.title}</span>
+                                    <span class="lesson-title">${highlightedVideoTitle}</span>
                                     <div class="lesson-meta">
-                                        <span><i class="fa-solid fa-stopwatch"></i> ${video.duration}</span>
                                         <span><i class="fa-solid fa-chart-simple"></i> ${video.views}</span>
                                     </div>
                                 </div>
+                                <span class="lesson-cta">Assistir</span>
                             </li>
                         `;
                     });
 
-                    let contextHTML = phase ? `<span class="module-context">${phase.title}</span>` : '';
+                    let contextHTML = phase && showPhaseContext ? `<span class="module-context">${highlightMatches(phase.title, highlightQuery)}</span>` : '';
 
                     cardsHTML += `
-                        <article class="module-card">
+                        <article class="module-card ${isCollapsed ? 'collapsed' : ''}" id="${card.id}">
                             <div class="module-header">
                                 ${contextHTML}
                                 <div class="module-header-top">
                                     <div class="icon-box">
                                         <i class="fa-solid ${card.icon}"></i>
                                     </div>
-                                    <h3 class="module-title">${card.title}</h3>
+                                    <h3 class="module-title">${highlightMatches(card.title, highlightQuery)}</h3>
                                 </div>
-                                <p class="module-desc">${card.desc}</p>
+                                <p class="module-desc">${highlightMatches(card.desc, highlightQuery)}</p>
+                                <div class="module-meta-row">
+                                    <span class="meta-chip"><i class="fa-solid fa-circle-play"></i> ${cardSummary.lessons} aulas</span>
+                                </div>
+                                <button class="module-toggle" type="button" aria-expanded="${isCollapsed ? 'false' : 'true'}">
+                                    <span class="toggle-label">${isCollapsed ? 'Toque para exibir aulas' : 'Ocultar aulas'}</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
                             </div>
-                            <ul class="lesson-list">
-                                ${lessonsHTML}
-                            </ul>
+                            <div class="module-body">
+                                <ul class="lesson-list">
+                                    ${lessonsHTML}
+                                </ul>
+                            </div>
                         </article>
                     `;
                 });
@@ -1458,76 +2212,117 @@
             }
 
             function renderPhase(phase) {
+                const summary = getPhaseSummary(phase);
+                updateStatusPill(`${summary.lessons} aulas nesta fase`);
+
                 dynamicContent.innerHTML = `
                     <div class="phase-hero">
                         <span class="phase-badge"><i class="fa-solid fa-server"></i> MÓDULO ${phase.number}</span>
                         <h2>${phase.title}</h2>
                         <p>${phase.description}</p>
                     </div>
-                    <div class="modules-grid">
-                        ${buildCardsHTML(null, phase.cards)}
+                    ${buildStatsHTML([
+                        { icon: 'fa-cubes', value: summary.cards, label: 'Trilhas nesta fase' },
+                        { icon: 'fa-circle-play', value: summary.lessons, label: 'Aulas disponíveis' }
+                    ])}
+                    ${buildPhaseToolbarHTML(phase)}
+                    <div class="modules-grid phase-view-grid">
+                        ${buildCardsHTML(phase, phase.cards, { collapsible: true, expandFirst: false, showPhaseContext: false })}
                     </div>
                 `;
             }
 
+            createSearchSuggestions();
+
             // --- Algoritmo de Varredura (Busca) ---
             searchInput.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase().trim();
-                
-                // Se a busca for limpa
-                if (query === '') {
+                const rawQuery = e.target.value.trim();
+                const tokens = getSearchTokens(rawQuery);
+                const safeQuery = escapeHTML(rawQuery);
+
+                if (!tokens.length) {
                     if(activePhaseIndex !== null) {
-                        // Restaura a visualização da aba que estava ativa
                         renderPhase(PHASES[activePhaseIndex]);
-                        // Devolve a classe visual pro menu
                         const items = document.querySelectorAll('.nav-item');
                         if(items[activePhaseIndex]) items[activePhaseIndex].classList.add('active');
                     } else {
-                        // Se não tinha aba ativa, volta pra tela de bem vindo
                         renderWelcome();
                     }
+                    updateStatusPill(activePhaseIndex !== null ? `${getPhaseSummary(PHASES[activePhaseIndex]).lessons} aulas nesta fase` : `${platformStats.phases} fases disponíveis`);
                     return;
                 }
 
-                // Tira foco visual do menu durante a pesquisa global
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-                let resultsHTML = '';
                 let totalLessonsFound = 0;
+                let totalCardsFound = 0;
+                const rankedResults = [];
 
                 PHASES.forEach(phase => {
-                    let phaseMatched = phase.title.toLowerCase().includes(query) || phase.description.toLowerCase().includes(query);
-                    
+                    const phaseSearchText = normalizeText(`${phase.title} ${phase.description}`);
+                    const phaseMatched = tokens.every(token => phaseSearchText.includes(token));
+
                     phase.cards.forEach(card => {
-                        let cardMatched = phaseMatched || card.title.toLowerCase().includes(query) || card.desc.toLowerCase().includes(query);
-                        
-                        let matchedVideos = card.videos.filter(video => 
-                            cardMatched || video.title.toLowerCase().includes(query)
-                        );
+                        const cardSearchText = normalizeText(`${phase.title} ${phase.description} ${card.title} ${card.desc}`);
+                        const cardMatched = phaseMatched || tokens.every(token => cardSearchText.includes(token));
+
+                        let matchedVideos = card.videos.filter(video => {
+                            const videoSearchText = normalizeText(`${phase.title} ${phase.description} ${card.title} ${card.desc} ${video.title}`);
+                            return tokens.every(token => videoSearchText.includes(token));
+                        });
+
+                        if (cardMatched && !matchedVideos.length) {
+                            matchedVideos = [...card.videos];
+                        }
 
                         if (matchedVideos.length > 0) {
                             totalLessonsFound += matchedVideos.length;
-                            let cloneCard = { ...card, videos: matchedVideos };
-                            resultsHTML += buildCardsHTML(phase, [cloneCard]);
+                            totalCardsFound += 1;
+
+                            rankedResults.push({
+                                score: scoreMatch(tokens, {
+                                    phaseTitle: phase.title,
+                                    phaseDescription: phase.description,
+                                    cardTitle: card.title,
+                                    cardDescription: card.desc,
+                                    videoTitles: matchedVideos.map(video => video.title).join(' ')
+                                }) + matchedVideos.length,
+                                html: buildCardsHTML(phase, [{ ...card, videos: matchedVideos }], {
+                                    collapsible: false,
+                                    showPhaseContext: true,
+                                    highlightQuery: rawQuery
+                                })
+                            });
                         }
                     });
                 });
 
+                const resultsHTML = rankedResults
+                    .sort((a, b) => b.score - a.score)
+                    .map(result => result.html)
+                    .join('');
+
                 if (totalLessonsFound === 0) {
+                    updateStatusPill('Nenhum resultado encontrado');
                     dynamicContent.innerHTML = `
                         <div class="no-results">
                             <i class="fa-solid fa-triangle-exclamation"></i>
-                            <h3>Dados não localizados</h3>
-                            <p>O terminal não encontrou parâmetros contendo "${query}".</p>
+                            <h3>Sem resultados</h3>
+                            <p>Não encontramos aulas relacionadas a <strong>"${safeQuery}"</strong>. Tente buscar por módulo, tema ou nome da aula.</p>
                         </div>
                     `;
                 } else {
+                    updateStatusPill(`${totalLessonsFound} resultado(s) inteligentes`);
                     dynamicContent.innerHTML = `
                         <div class="phase-hero" style="border-left-color: var(--secondary-color);">
-                            <span class="phase-badge" style="color: var(--secondary-color);"><i class="fa-solid fa-radar"></i> VARREDURA ATIVA</span>
-                            <h2>Resultados do Sistema</h2>
-                            <p>${totalLessonsFound} bloco(s) de dados correspondem à matriz de busca <strong>"${query}"</strong>.</p>
+                            <span class="phase-badge" style="color: var(--secondary-color);"><i class="fa-solid fa-radar"></i> BUSCA ATIVA</span>
+                            <h2>Resultados encontrados</h2>
+                            <p>${totalLessonsFound} aula(s) correspondem à busca por <strong>"${safeQuery}"</strong>.</p>
                         </div>
+                        ${buildStatsHTML([
+                            { icon: 'fa-circle-play', value: totalLessonsFound, label: 'Aulas encontradas' },
+                            { icon: 'fa-cubes', value: totalCardsFound, label: 'Trilhas relacionadas' }
+                        ])}
                         <div class="modules-grid">
                             ${resultsHTML}
                         </div>
@@ -1535,12 +2330,40 @@
                 }
             });
 
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const firstResult = dynamicContent.querySelector('.lesson-item, .resume-card');
+                    if (firstResult) {
+                        e.preventDefault();
+                        firstResult.click();
+                    }
+                }
+
+                if (e.key === 'Escape' && searchInput.value.trim()) {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                const activeTag = document.activeElement?.tagName;
+                const isEditable = activeTag === 'INPUT' || activeTag === 'TEXTAREA';
+
+                if (e.key === '/' && !isEditable) {
+                    e.preventDefault();
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            });
+
             // --- Controle Dinâmico do Modal (Iframe) ---
             const openModal = (src, title) => {
                 modalTitle.textContent = title;
-                videoWrapper.innerHTML = `<iframe src="${src}" frameborder="0" allowfullscreen></iframe>`;
+                videoWrapper.innerHTML = `<iframe src="${src}" title="${escapeHTML(title)}" frameborder="0" allowfullscreen></iframe>`;
                 modal.classList.add('active');
                 document.body.style.overflow = 'hidden';
+                saveRecentLesson({ src, title });
+                updateStatusPill('Aula em reprodução');
             };
 
             const closeModal = () => {
@@ -1549,12 +2372,66 @@
                 setTimeout(() => { videoWrapper.innerHTML = ''; }, 300);
             };
 
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.focus();
+            });
+
             dynamicContent.addEventListener('click', (e) => {
-                const lessonItem = e.target.closest('.lesson-item');
-                if (lessonItem) {
-                    const src = lessonItem.getAttribute('data-src');
-                    const title = lessonItem.getAttribute('data-title');
+                const actionItem = e.target.closest('.lesson-item, .resume-card');
+                if (actionItem) {
+                    const src = actionItem.getAttribute('data-src');
+                    const title = actionItem.getAttribute('data-title');
                     openModal(src, title);
+                    return;
+                }
+
+                const toggleBtn = e.target.closest('.module-toggle');
+                if (toggleBtn) {
+                    const card = toggleBtn.closest('.module-card');
+                    const isCollapsed = card.classList.toggle('collapsed');
+                    toggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
+                    const label = toggleBtn.querySelector('.toggle-label');
+                    if (label) label.textContent = isCollapsed ? 'Toque para exibir aulas' : 'Ocultar aulas';
+                    return;
+                }
+
+                const phaseChip = e.target.closest('.phase-chip');
+                if (phaseChip) {
+                    const targetCard = document.getElementById(phaseChip.getAttribute('data-target'));
+                    if (targetCard) {
+                        targetCard.classList.remove('collapsed');
+                        const toggle = targetCard.querySelector('.module-toggle');
+                        if (toggle) {
+                            toggle.setAttribute('aria-expanded', 'true');
+                            const label = toggle.querySelector('.toggle-label');
+                            if (label) label.textContent = 'Ocultar aulas';
+                        }
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    return;
+                }
+
+                const controlBtn = e.target.closest('.control-btn');
+                if (controlBtn) {
+                    const collapseAll = controlBtn.getAttribute('data-action') === 'collapse';
+                    document.querySelectorAll('.phase-view-grid .module-card').forEach(card => {
+                        card.classList.toggle('collapsed', collapseAll);
+                        const toggle = card.querySelector('.module-toggle');
+                        if (toggle) {
+                            toggle.setAttribute('aria-expanded', String(!collapseAll));
+                            const label = toggle.querySelector('.toggle-label');
+                            if (label) label.textContent = collapseAll ? 'Toque para exibir aulas' : 'Ocultar aulas';
+                        }
+                    });
+                }
+            });
+
+            dynamicContent.addEventListener('keydown', (e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.lesson-item, .resume-card')) {
+                    e.preventDefault();
+                    e.target.closest('.lesson-item, .resume-card').click();
                 }
             });
 
@@ -1562,13 +2439,31 @@
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) closeModal();
             });
+
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            window.addEventListener('scroll', () => {
+                scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+            });
+
             document.addEventListener('keydown', (e) => {
+                const typingInField = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+
+                if ((e.key === '/' || (e.ctrlKey && e.key.toLowerCase() === 'k')) && !typingInField) {
+                    e.preventDefault();
+                    searchInput.focus();
+                    searchInput.select();
+                    return;
+                }
+
                 if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
             });
 
             // --- Boot Sequence (Inicializa Interface e carrega o Vazio) ---
             initNav();
-            renderWelcome(); // Garante o carregamento inicial sem aba ativada
+            renderWelcome();
         });
     </script>
 </body>
