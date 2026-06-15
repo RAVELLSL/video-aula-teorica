@@ -1,9 +1,158 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Aprendizagem Digital</title>
+    <script>
+        /* Teste inicial de tela: executa antes da renderização do conteúdo */
+        (function () {
+            const ROOT_CLASS_PREFIXES = [
+                'device-',
+                'layout-',
+                'orientation-',
+                'pointer-',
+                'density-',
+                'screen-'
+            ];
+
+            function getViewportSize() {
+                const root = document.documentElement;
+                const width = Math.round(Math.max(root.clientWidth || 0, window.innerWidth || 0));
+                const height = Math.round(Math.max(root.clientHeight || 0, window.innerHeight || 0));
+                return { width, height };
+            }
+
+            function buildDeviceProfile() {
+                const viewport = getViewportSize();
+                const width = viewport.width;
+                const height = viewport.height;
+                const shortestSide = Math.min(width, height);
+                const longestSide = Math.max(width, height);
+                const dpr = Number((window.devicePixelRatio || 1).toFixed(2));
+                const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+                const finePointer = window.matchMedia('(pointer: fine)').matches;
+                const hoverCapable = window.matchMedia('(hover: hover)').matches;
+                const portrait = height >= width;
+                const compactHeight = height <= 720;
+                const veryCompactHeight = height <= 620;
+                const highDensity = dpr >= 1.5;
+
+                /* Regra central: smartphone fica com a experiência original; tablets, notebooks e desktops usam o layout amplo. */
+                const phoneLike = width <= 900 || (coarsePointer && shortestSide <= 768 && longestSide <= 1180);
+                const wideLayout = !phoneLike && width >= 901;
+
+                let category = 'desktop';
+                if (phoneLike) {
+                    category = 'phone';
+                } else if (coarsePointer || width <= 1180) {
+                    category = 'tablet';
+                } else if (width <= 1440 || compactHeight) {
+                    category = 'notebook';
+                }
+
+                let sidebarWidth = '360px';
+                let contentMaxWidth = '1440px';
+                let mainPadding = 'clamp(1rem, 2vw, 3rem)';
+
+                if (category === 'phone') {
+                    sidebarWidth = '100%';
+                    contentMaxWidth = '100%';
+                    mainPadding = '1rem 0.85rem 1.25rem';
+                } else if (category === 'tablet') {
+                    sidebarWidth = 'clamp(300px, 34vw, 380px)';
+                    contentMaxWidth = '1180px';
+                    mainPadding = 'clamp(1rem, 1.8vw, 1.75rem)';
+                } else if (category === 'notebook') {
+                    sidebarWidth = 'clamp(320px, 27vw, 390px)';
+                    contentMaxWidth = '1360px';
+                    mainPadding = 'clamp(1.1rem, 2vw, 2.25rem)';
+                } else {
+                    sidebarWidth = 'clamp(360px, 24vw, 440px)';
+                    contentMaxWidth = '1600px';
+                    mainPadding = 'clamp(1.5rem, 2.2vw, 3rem)';
+                }
+
+                return {
+                    width,
+                    height,
+                    shortestSide,
+                    longestSide,
+                    dpr,
+                    category,
+                    wideLayout,
+                    orientation: portrait ? 'portrait' : 'landscape',
+                    pointer: coarsePointer ? 'touch' : (finePointer ? 'mouse' : 'unknown'),
+                    coarsePointer,
+                    finePointer,
+                    hoverCapable,
+                    compactHeight,
+                    veryCompactHeight,
+                    highDensity,
+                    sidebarWidth,
+                    contentMaxWidth,
+                    mainPadding
+                };
+            }
+
+            function applyDeviceProfile() {
+                const profile = buildDeviceProfile();
+                const root = document.documentElement;
+
+                Array.from(root.classList).forEach(className => {
+                    if (ROOT_CLASS_PREFIXES.some(prefix => className.startsWith(prefix))) {
+                        root.classList.remove(className);
+                    }
+                });
+
+                root.classList.add(
+                    `device-${profile.category}`,
+                    profile.wideLayout ? 'layout-wide' : 'layout-stacked',
+                    `orientation-${profile.orientation}`,
+                    `pointer-${profile.pointer}`,
+                    profile.highDensity ? 'density-high' : 'density-standard'
+                );
+
+                if (profile.compactHeight) root.classList.add('screen-compact-height');
+                if (profile.veryCompactHeight) root.classList.add('screen-very-compact-height');
+
+                root.dataset.deviceCategory = profile.category;
+                root.dataset.layoutMode = profile.wideLayout ? 'wide' : 'stacked';
+                root.dataset.orientation = profile.orientation;
+                root.dataset.pointer = profile.pointer;
+
+                root.style.setProperty('--app-vh', `${profile.height * 0.01}px`);
+                root.style.setProperty('--app-vw', `${profile.width * 0.01}px`);
+                root.style.setProperty('--detected-sidebar-width', profile.sidebarWidth);
+                root.style.setProperty('--detected-content-max-width', profile.contentMaxWidth);
+                root.style.setProperty('--detected-main-padding', profile.mainPadding);
+
+                window.__DEVICE_PROFILE__ = profile;
+                return profile;
+            }
+
+            window.__buildDeviceProfile = buildDeviceProfile;
+            window.__applyDeviceProfile = applyDeviceProfile;
+            applyDeviceProfile();
+
+            let resizeFrame = null;
+            const queueProfileRefresh = () => {
+                window.cancelAnimationFrame(resizeFrame);
+                resizeFrame = window.requestAnimationFrame(() => {
+                    const previousMode = window.__DEVICE_PROFILE__?.wideLayout ? 'wide' : 'stacked';
+                    const profile = applyDeviceProfile();
+                    const nextMode = profile.wideLayout ? 'wide' : 'stacked';
+                    document.dispatchEvent(new CustomEvent('adaptive-profile-change', {
+                        detail: { profile, previousMode, nextMode }
+                    }));
+                });
+            };
+
+            window.addEventListener('resize', queueProfileRefresh, { passive: true });
+            window.addEventListener('orientationchange', queueProfileRefresh, { passive: true });
+        })();
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -22,6 +171,12 @@
             --border-color: rgba(0, 85, 255, 0.15);
             --border-hover: rgba(0, 85, 255, 0.5);
             --sidebar-bg: rgba(255, 255, 255, 0.95);
+            --sidebar-phase-color: #0055FF;
+            --sidebar-phase-soft: rgba(0, 85, 255, 0.10);
+            --sidebar-topic-color: #7C3AED;
+            --sidebar-topic-soft: rgba(124, 58, 237, 0.10);
+            --sidebar-video-color: #059669;
+            --sidebar-video-soft: rgba(5, 150, 105, 0.11);
             
             /* Sombras e Brilhos Tema Claro */
             --shadow-sm: 0 4px 15px rgba(0, 30, 80, 0.05);
@@ -32,7 +187,7 @@
             --radius-md: 12px;
             --radius-lg: 16px;
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --sidebar-width: 320px;
+            --sidebar-width: 360px;
             --content-max-width: 1440px;
         }
 
@@ -49,6 +204,12 @@
             --border-color: rgba(0, 240, 255, 0.15);
             --border-hover: rgba(0, 240, 255, 0.6);
             --sidebar-bg: rgba(10, 12, 18, 0.95);
+            --sidebar-phase-color: #00F0FF;
+            --sidebar-phase-soft: rgba(0, 240, 255, 0.12);
+            --sidebar-topic-color: #B026FF;
+            --sidebar-topic-soft: rgba(176, 38, 255, 0.13);
+            --sidebar-video-color: #22C55E;
+            --sidebar-video-soft: rgba(34, 197, 94, 0.13);
             
             /* Sombras e Brilhos Neon */
             --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -56,6 +217,132 @@
             --glow-primary: 0 0 20px rgba(0, 240, 255, 0.25), inset 0 0 10px rgba(0, 240, 255, 0.05);
             --glow-text: 0 0 8px rgba(0, 240, 255, 0.4);
         }
+
+
+
+        /* --- Perfil adaptativo de tela: classes aplicadas antes da página renderizar --- */
+        :root {
+            --app-vh: 1vh;
+            --app-vw: 1vw;
+            --detected-sidebar-width: var(--sidebar-width);
+            --detected-content-max-width: var(--content-max-width);
+            --detected-main-padding: clamp(1rem, 2vw, 3rem);
+            --topbar-height: 88px;
+            --main-content-height: calc((var(--app-vh) * 100) - var(--topbar-height));
+            --inline-video-max-height: 62vh;
+            --inline-video-max-width: 100%;
+            --content-fit-scale: 1;
+        }
+
+        html.layout-wide {
+            --sidebar-width: var(--detected-sidebar-width);
+            --content-max-width: var(--detected-content-max-width);
+        }
+
+        html.layout-wide .sidebar {
+            height: calc(var(--app-vh) * 100);
+        }
+
+        html.layout-wide,
+        html.layout-wide body {
+            height: calc(var(--app-vh) * 100);
+            overflow: hidden;
+        }
+
+        html.layout-wide .app-container {
+            height: calc(var(--app-vh) * 100);
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        html.layout-wide .main-wrapper {
+            height: calc(var(--app-vh) * 100);
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        html.layout-wide .top-bar {
+            flex: 0 0 auto;
+        }
+
+        html.layout-wide .main-content {
+            padding: var(--detected-main-padding);
+            height: calc((var(--app-vh) * 100) - var(--topbar-height));
+            max-height: calc((var(--app-vh) * 100) - var(--topbar-height));
+            overflow: hidden;
+            overscroll-behavior: none;
+            container-type: size;
+        }
+
+        html.device-tablet.layout-wide .brand,
+        html.device-notebook.layout-wide.screen-compact-height .brand {
+            padding: 1.35rem 1rem;
+        }
+
+        html.device-tablet.layout-wide .brand h1,
+        html.device-notebook.layout-wide.screen-compact-height .brand h1 {
+            font-size: 1.18rem;
+        }
+
+        html.device-tablet.layout-wide .brand p,
+        html.device-notebook.layout-wide.screen-compact-height .brand p {
+            font-size: 0.68rem;
+            letter-spacing: 1.4px;
+        }
+
+        html.layout-wide.screen-compact-height .nav-menu {
+            padding: 1rem 0.8rem 4.5rem;
+            gap: 0.42rem;
+        }
+
+        html.layout-wide.screen-compact-height .nav-item {
+            padding: 0.78rem;
+            gap: 0.75rem;
+        }
+
+        html.layout-wide.screen-compact-height .nav-topic-btn {
+            padding: 0.64rem;
+        }
+
+        html.layout-wide.screen-compact-height .nav-topic-panel {
+            padding: 0.6rem;
+        }
+
+        html.layout-wide.screen-compact-height .sidebar-lesson-item {
+            padding: 0.55rem;
+        }
+
+        html.layout-wide.screen-compact-height .inline-video-header {
+            padding: 0.9rem 1rem;
+        }
+
+        html.layout-wide.screen-compact-height .inline-video-header h2 {
+            font-size: clamp(1.05rem, 1.8vw, 1.55rem);
+        }
+
+        html.layout-wide.screen-compact-height .inline-video-subtitle,
+        html.layout-wide.screen-compact-height .inline-video-footer {
+            font-size: 0.82rem;
+        }
+
+        html.layout-wide.screen-compact-height .inline-video-wrapper {
+            max-height: calc((var(--app-vh) * 100) - 15rem);
+        }
+
+        html.device-tablet.layout-wide .top-bar,
+        html.device-notebook.layout-wide.screen-compact-height .top-bar {
+            padding-block: 0.9rem;
+        }
+
+        html.device-tablet.layout-wide .search-container input,
+        html.device-notebook.layout-wide.screen-compact-height .search-container input {
+            padding-block: 0.82rem;
+        }
+
+        html.orientation-portrait.device-tablet.layout-wide .main-wrapper {
+            width: calc(100% - var(--sidebar-width));
+        }
+
 
         /* --- Global Reset --- */
         * {
@@ -222,6 +509,293 @@
 
         .nav-item.active i {
             text-shadow: var(--glow-text);
+        }
+
+        /* --- Navegação lateral expandida para desktops, notebooks e tablets --- */
+        .sidebar-legend {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.45rem;
+            margin: 0 0 0.8rem;
+            padding: 0.85rem;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-legend-title {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: var(--text-main);
+            font-size: 0.72rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            margin-bottom: 0.15rem;
+        }
+
+        .sidebar-legend-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.74rem;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 3px var(--bg-card);
+        }
+
+        .legend-dot.phase { background: var(--sidebar-phase-color); }
+        .legend-dot.topic { background: var(--sidebar-topic-color); }
+        .legend-dot.video { background: var(--sidebar-video-color); }
+
+        .nav-phase-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .nav-phase-block > .nav-item {
+            border-color: rgba(0, 85, 255, 0.10);
+            border-left: 5px solid var(--sidebar-phase-color);
+            background: linear-gradient(90deg, var(--sidebar-phase-soft), transparent 74%);
+            color: var(--text-main);
+            box-shadow: 0 4px 14px rgba(0, 30, 80, 0.04);
+        }
+
+        .nav-phase-block > .nav-item i {
+            color: var(--sidebar-phase-color);
+        }
+
+        .nav-phase-block > .nav-item:hover {
+            background: linear-gradient(90deg, var(--sidebar-phase-soft), var(--primary-light));
+            color: var(--sidebar-phase-color);
+            border-color: var(--sidebar-phase-color);
+            box-shadow: var(--glow-primary);
+        }
+
+        .nav-phase-block > .nav-item.active {
+            background: linear-gradient(90deg, var(--sidebar-phase-soft), rgba(255,255,255,0));
+            color: var(--sidebar-phase-color);
+            border-color: var(--sidebar-phase-color);
+            box-shadow: var(--glow-primary);
+        }
+
+        .nav-phase-main {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .nav-type-label {
+            width: fit-content;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.18rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.62rem;
+            font-weight: 900;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border: 1px solid currentColor;
+        }
+
+        .nav-type-label.phase {
+            color: var(--sidebar-phase-color);
+            background: var(--sidebar-phase-soft);
+        }
+
+        .nav-type-label.topic {
+            color: var(--sidebar-topic-color);
+            background: var(--sidebar-topic-soft);
+        }
+
+        .nav-type-label.video {
+            color: var(--sidebar-video-color);
+            background: var(--sidebar-video-soft);
+        }
+
+        .nav-label-title {
+            display: block;
+            line-height: 1.35;
+        }
+
+        .nav-topic-tree {
+            display: none;
+            margin: 0 0 0.55rem 1.2rem;
+            padding: 0.4rem 0 0.15rem 0.95rem;
+            border-left: 2px solid var(--sidebar-topic-color);
+            flex-direction: column;
+            gap: 0.55rem;
+            animation: fadeInDown 0.25s ease-out;
+        }
+
+        .nav-phase-block.expanded > .nav-topic-tree {
+            display: flex;
+        }
+
+        .nav-topic-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .nav-topic-btn {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 28px 1fr 16px;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.8rem 0.75rem;
+            border-radius: 10px;
+            border: 1px solid rgba(124, 58, 237, 0.18);
+            border-left: 4px solid var(--sidebar-topic-color);
+            background: linear-gradient(90deg, var(--sidebar-topic-soft), transparent 78%);
+            color: var(--text-main);
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.82rem;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .nav-topic-btn:hover,
+        .nav-topic-btn.active {
+            background: linear-gradient(90deg, var(--sidebar-topic-soft), var(--bg-card));
+            color: var(--sidebar-topic-color);
+            border-color: var(--sidebar-topic-color);
+            box-shadow: 0 0 16px var(--sidebar-topic-soft);
+        }
+
+        .topic-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--sidebar-topic-soft);
+            border: 1px solid var(--sidebar-topic-color);
+            color: var(--sidebar-topic-color);
+            font-size: 0.72rem;
+            font-weight: 900;
+        }
+
+        .nav-topic-panel {
+            margin-left: 0.35rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid rgba(5, 150, 105, 0.16);
+            border-left: 4px solid var(--sidebar-video-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-topic-desc {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            line-height: 1.55;
+            margin-bottom: 0.7rem;
+        }
+
+        .nav-topic-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.65rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 999px;
+            background: var(--sidebar-video-soft);
+            color: var(--sidebar-video-color);
+            border: 1px solid var(--sidebar-video-color);
+            font-size: 0.72rem;
+            font-weight: 900;
+        }
+
+        .sidebar-lesson-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .sidebar-lesson-item {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 24px 1fr;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.65rem;
+            border-radius: 10px;
+            border: 1px solid rgba(5, 150, 105, 0.18);
+            border-left: 4px solid var(--sidebar-video-color);
+            background: linear-gradient(90deg, var(--sidebar-video-soft), var(--bg-surface));
+            color: var(--text-main);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+        }
+
+        .sidebar-lesson-item:hover,
+        .sidebar-lesson-item.active {
+            border-color: var(--sidebar-video-color);
+            background: linear-gradient(90deg, var(--sidebar-video-soft), var(--bg-card));
+            box-shadow: 0 0 18px var(--sidebar-video-soft);
+            color: var(--sidebar-video-color);
+        }
+
+        .sidebar-lesson-index {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--sidebar-video-soft);
+            color: var(--sidebar-video-color);
+            border: 1px solid var(--sidebar-video-color);
+            font-size: 0.68rem;
+            font-weight: 900;
+        }
+
+        .sidebar-lesson-title {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .sidebar-lesson-meta {
+            display: block;
+            margin-top: 0.25rem;
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+        }
+
+        .sidebar-lesson-item:hover .sidebar-lesson-meta,
+        .sidebar-lesson-item.active .sidebar-lesson-meta {
+            color: var(--sidebar-video-color);
+        }
+
+        .nav-topic-btn:focus-visible,
+        .sidebar-lesson-item:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 3px;
         }
 
         /* --- Conteúdo Principal --- */
@@ -538,6 +1112,360 @@
             width: 100%;
             margin: 0 auto;
             min-width: 0;
+        }
+
+        /* --- Ajuste de encaixe da área central para telas maiores --- */
+        html.layout-wide .main-content.content-fit-applied {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: clamp(0.7rem, 1.2vw, 1rem);
+            overflow-y: hidden;
+            overflow-x: hidden;
+            min-height: 0;
+        }
+
+        html.layout-wide .main-content.content-fit-applied > * {
+            flex-shrink: 0;
+            min-width: 0;
+        }
+
+        html.layout-wide .main-content.content-has-video {
+            justify-content: center;
+            gap: 0;
+        }
+
+        html.layout-wide .main-content.content-has-video > * {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        html.layout-wide .main-content.content-fit-applied:not(.content-has-video) {
+            justify-content: center;
+        }
+
+        html.layout-wide .main-content.content-fit-applied:not(.content-has-video) .phase-hero,
+        html.layout-wide .main-content.content-fit-applied:not(.content-has-video) .page-stats,
+        html.layout-wide .main-content.content-fit-applied:not(.content-has-video) .desktop-empty-state,
+        html.layout-wide .main-content.content-fit-applied:not(.content-has-video) .resume-section {
+            margin-block: 0;
+        }
+
+        html.layout-wide .main-content.fit-level-2:not(.content-has-video),
+        html.layout-wide .main-content.fit-level-3:not(.content-has-video) {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.65fr);
+            grid-auto-rows: auto;
+            align-content: center;
+            align-items: stretch;
+            column-gap: clamp(0.8rem, 1.4vw, 1.25rem);
+            row-gap: 0.75rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2:not(.content-has-video) .phase-hero,
+        html.layout-wide .main-content.fit-level-3:not(.content-has-video) .phase-hero {
+            grid-column: 1;
+            height: 100%;
+        }
+
+        html.layout-wide .main-content.fit-level-2:not(.content-has-video) .page-stats,
+        html.layout-wide .main-content.fit-level-3:not(.content-has-video) .page-stats {
+            grid-column: 2;
+            align-self: stretch;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.55rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2:not(.content-has-video) .desktop-empty-state,
+        html.layout-wide .main-content.fit-level-3:not(.content-has-video) .desktop-empty-state {
+            grid-column: 1 / -1;
+        }
+
+        html.layout-wide .main-content.fit-level-4:not(.content-has-video) {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(180px, 0.34fr);
+            align-content: center;
+            align-items: center;
+            column-gap: 0.75rem;
+            row-gap: 0.5rem;
+        }
+
+        html.layout-wide .main-content.fit-level-4:not(.content-has-video) .phase-hero {
+            grid-column: 1;
+            margin: 0;
+        }
+
+        html.layout-wide .main-content.fit-level-4:not(.content-has-video) .page-stats {
+            grid-column: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            margin: 0;
+        }
+
+        html.layout-wide .main-content.fit-level-4:not(.content-has-video) .desktop-empty-state,
+        html.layout-wide .main-content.fit-level-4:not(.content-has-video) .resume-section {
+            display: none;
+        }
+
+        html.layout-wide .main-content.fit-level-5:not(.content-has-video) {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 0;
+        }
+
+        html.layout-wide .main-content.fit-level-5:not(.content-has-video) .phase-hero {
+            margin: 0;
+            width: 100%;
+        }
+
+        html.layout-wide .main-content.fit-level-5:not(.content-has-video) .page-stats,
+        html.layout-wide .main-content.fit-level-5:not(.content-has-video) .desktop-empty-state,
+        html.layout-wide .main-content.fit-level-5:not(.content-has-video) .resume-section {
+            display: none;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .phase-hero {
+            padding: clamp(1rem, 1.8vw, 1.75rem);
+            margin-bottom: 1rem;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .phase-hero h2 {
+            font-size: clamp(1.3rem, 2.1vw, 2rem);
+            margin-bottom: 0.7rem;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .phase-hero p {
+            font-size: 0.98rem;
+            line-height: 1.55;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .page-stats {
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .stat-card {
+            padding: 0.75rem 0.85rem;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .desktop-empty-state {
+            padding: 1.1rem 1.2rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 {
+            gap: 0.65rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .phase-hero {
+            padding: 1rem 1.1rem;
+            margin-bottom: 0.65rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .phase-badge {
+            margin-bottom: 0.65rem;
+            padding: 0.38rem 0.8rem;
+            font-size: 0.72rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .phase-hero h2 {
+            font-size: clamp(1.15rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.5rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .phase-hero p {
+            font-size: 0.9rem;
+            line-height: 1.42;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .page-stats {
+            grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+            gap: 0.55rem;
+            margin-bottom: 0.65rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .stat-card {
+            padding: 0.58rem 0.65rem;
+            gap: 0.55rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .stat-card i {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .stat-card strong {
+            font-size: 0.98rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .desktop-empty-state {
+            padding: 0.85rem 1rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .desktop-empty-state i {
+            font-size: 1.7rem;
+            margin-bottom: 0.45rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .desktop-empty-state h3 {
+            font-size: 1rem;
+            margin-bottom: 0.35rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .desktop-empty-state p {
+            font-size: 0.86rem;
+            line-height: 1.38;
+        }
+
+        html.layout-wide .main-content.fit-level-3 {
+            gap: 0.45rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .phase-hero {
+            padding: 0.8rem 0.9rem;
+            margin-bottom: 0.45rem;
+            border-left-width: 3px;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .phase-badge {
+            margin-bottom: 0.45rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .phase-hero h2 {
+            font-size: clamp(1rem, 1.55vw, 1.45rem);
+            margin-bottom: 0.35rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .phase-hero p {
+            font-size: 0.82rem;
+            line-height: 1.32;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .page-stats {
+            grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+            gap: 0.45rem;
+            margin-bottom: 0.45rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .stat-card {
+            padding: 0.46rem 0.55rem;
+            gap: 0.45rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .stat-card i {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            font-size: 0.85rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .stat-card strong {
+            font-size: 0.88rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .stat-card span {
+            font-size: 0.72rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .desktop-empty-state {
+            padding: 0.65rem 0.75rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .desktop-empty-state i {
+            display: none;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .desktop-empty-state h3 {
+            font-size: 0.92rem;
+            margin-bottom: 0.25rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .desktop-empty-state p {
+            font-size: 0.8rem;
+            line-height: 1.28;
+        }
+
+        html.layout-wide .main-content.content-overflowing .page-stats {
+            display: none;
+        }
+
+        html.layout-wide .main-content.content-overflowing .desktop-empty-state {
+            padding: 0.55rem 0.65rem;
+        }
+
+
+        html.layout-wide .main-content.fit-level-4 .phase-hero {
+            padding: 0.72rem 0.85rem;
+            border-left-width: 3px;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .phase-badge {
+            margin-bottom: 0.32rem;
+            padding: 0.28rem 0.62rem;
+            font-size: 0.64rem;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .phase-hero h2 {
+            font-size: clamp(0.95rem, 1.35vw, 1.25rem);
+            line-height: 1.16;
+            margin-bottom: 0.28rem;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .phase-hero p {
+            font-size: 0.76rem;
+            line-height: 1.24;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .stat-card {
+            padding: 0.38rem 0.46rem;
+            gap: 0.38rem;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .stat-card i {
+            width: 26px;
+            height: 26px;
+            font-size: 0.72rem;
+            border-radius: 8px;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .stat-card strong {
+            font-size: 0.78rem;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .stat-card span {
+            font-size: 0.66rem;
+        }
+
+        html.layout-wide .main-content.fit-level-5 .phase-hero {
+            padding: 0.58rem 0.7rem;
+            border-left-width: 3px;
+        }
+
+        html.layout-wide .main-content.fit-level-5 .phase-badge {
+            display: none;
+        }
+
+        html.layout-wide .main-content.fit-level-5 .phase-hero h2 {
+            font-size: clamp(0.88rem, 1.18vw, 1.08rem);
+            line-height: 1.12;
+            margin-bottom: 0.22rem;
+        }
+
+        html.layout-wide .main-content.fit-level-5 .phase-hero p {
+            font-size: 0.7rem;
+            line-height: 1.18;
+        }
+
+        html.layout-wide .main-content.content-overflowing:not(.content-has-video) .phase-hero p {
+            display: -webkit-box;
+            -webkit-line-clamp: 6;
+            line-clamp: 6;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         /* --- Painel da Fase & Welcome Screen --- */
@@ -926,6 +1854,222 @@
             white-space: nowrap;
         }
 
+        .inline-video-shell,
+        .desktop-empty-state {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            animation: fadeInUp 0.45s ease-out;
+        }
+
+        .inline-video-header {
+            padding: clamp(1rem, 2vw, 1.5rem);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: var(--bg-surface);
+        }
+
+        .inline-video-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: var(--primary-color);
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.45rem;
+        }
+
+        .inline-video-header h2 {
+            font-size: clamp(1.35rem, 2.4vw, 2.1rem);
+            line-height: 1.25;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .inline-video-subtitle {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            margin-top: 0.45rem;
+            line-height: 1.55;
+        }
+
+        .inline-video-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+        }
+
+        .inline-video-wrapper iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        html.layout-wide .inline-video-shell {
+            height: 100%;
+            max-height: 100%;
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        html.layout-wide .inline-video-header {
+            flex-shrink: 0;
+        }
+
+        html.layout-wide .inline-video-wrapper {
+            align-self: center;
+            justify-self: center;
+            width: min(100%, var(--inline-video-max-width));
+            height: min(100%, var(--inline-video-max-height));
+            max-width: 100%;
+            max-height: 100%;
+            aspect-ratio: 16 / 9;
+            flex-shrink: 1;
+        }
+
+        html.layout-wide .inline-video-footer {
+            flex-shrink: 0;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .inline-video-header {
+            padding: 0.85rem 1rem;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .inline-video-header h2 {
+            font-size: clamp(1.05rem, 1.8vw, 1.55rem);
+        }
+
+        html.layout-wide .main-content.fit-level-1 .inline-video-subtitle {
+            font-size: 0.82rem;
+            margin-top: 0.25rem;
+        }
+
+        html.layout-wide .main-content.fit-level-1 .inline-video-footer {
+            padding: 0.65rem 1rem;
+            font-size: 0.78rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .inline-video-header {
+            padding: 0.65rem 0.85rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .inline-video-kicker {
+            margin-bottom: 0.25rem;
+            font-size: 0.7rem;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .inline-video-header h2 {
+            font-size: clamp(0.95rem, 1.5vw, 1.35rem);
+        }
+
+        html.layout-wide .main-content.fit-level-2 .inline-video-subtitle {
+            font-size: 0.76rem;
+            line-height: 1.35;
+        }
+
+        html.layout-wide .main-content.fit-level-2 .inline-video-footer {
+            padding: 0.48rem 0.8rem;
+            font-size: 0.72rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .inline-video-header {
+            padding: 0.5rem 0.7rem;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .inline-video-kicker {
+            display: none;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .inline-video-header h2 {
+            font-size: clamp(0.85rem, 1.25vw, 1.1rem);
+        }
+
+        html.layout-wide .main-content.fit-level-3 .inline-video-subtitle {
+            display: none;
+        }
+
+        html.layout-wide .main-content.fit-level-3 .inline-video-footer,
+        html.layout-wide .main-content.fit-level-4 .inline-video-footer,
+        html.layout-wide .main-content.fit-level-5 .inline-video-footer {
+            display: none;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .inline-video-header,
+        html.layout-wide .main-content.fit-level-5 .inline-video-header {
+            padding: 0.38rem 0.55rem;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .inline-video-kicker,
+        html.layout-wide .main-content.fit-level-5 .inline-video-kicker,
+        html.layout-wide .main-content.fit-level-4 .inline-video-subtitle,
+        html.layout-wide .main-content.fit-level-5 .inline-video-subtitle,
+        html.layout-wide .main-content.fit-level-4 .inline-video-header .meta-chip,
+        html.layout-wide .main-content.fit-level-5 .inline-video-header .meta-chip {
+            display: none;
+        }
+
+        html.layout-wide .main-content.fit-level-4 .inline-video-header h2,
+        html.layout-wide .main-content.fit-level-5 .inline-video-header h2 {
+            font-size: clamp(0.8rem, 1.05vw, 1rem);
+            line-height: 1.12;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        html.layout-wide .main-content.content-overflowing.content-has-video .inline-video-header {
+            display: none;
+        }
+
+        html.layout-wide .main-content.content-overflowing.content-has-video .inline-video-shell {
+            grid-template-rows: minmax(0, 1fr);
+        }
+
+        .inline-video-footer {
+            padding: 1rem clamp(1rem, 2vw, 1.5rem);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .desktop-empty-state {
+            padding: clamp(1.5rem, 3vw, 2.5rem);
+            text-align: center;
+            color: var(--text-muted);
+            border-style: dashed;
+        }
+
+        .desktop-empty-state i {
+            display: block;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            filter: drop-shadow(var(--glow-primary));
+        }
+
+        .desktop-empty-state h3 {
+            color: var(--text-main);
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
         .no-results {
             text-align: center;
             padding: 5rem 2rem;
@@ -1062,7 +2206,7 @@
 
         @media (max-width: 1200px) {
             :root {
-                --sidebar-width: 280px;
+                --sidebar-width: 320px;
             }
 
             .main-content {
@@ -1178,6 +2322,35 @@
             }
 
             .nav-item i { margin-top: 0; }
+
+            .sidebar-legend {
+                display: none !important;
+            }
+
+            .nav-type-label {
+                display: none !important;
+            }
+
+            .nav-phase-main {
+                display: block;
+            }
+
+            .nav-phase-block > .nav-item {
+                border-left: 1px solid transparent;
+                background-color: transparent;
+                background-image: none;
+                color: var(--text-muted);
+                box-shadow: none;
+            }
+
+            .nav-phase-block > .nav-item i {
+                color: inherit;
+            }
+
+            .nav-topic-tree,
+            .nav-phase-block.expanded > .nav-topic-tree {
+                display: none !important;
+            }
 
             .main-wrapper {
                 margin-left: 0;
@@ -1846,6 +3019,26 @@
             
             // Alterado para NULL: Página carrega sem fase pré-selecionada
             let activePhaseIndex = null;
+            let activeCardId = null;
+            let activeVideoSrc = null;
+            let currentDeviceProfile = window.__applyDeviceProfile ? window.__applyDeviceProfile() : (window.__DEVICE_PROFILE__ || null);
+
+            function syncDeviceProfile() {
+                currentDeviceProfile = window.__applyDeviceProfile ? window.__applyDeviceProfile() : (window.__DEVICE_PROFILE__ || currentDeviceProfile);
+                if (!currentDeviceProfile && window.__buildDeviceProfile) {
+                    currentDeviceProfile = window.__buildDeviceProfile();
+                }
+                if (currentDeviceProfile && document.body) {
+                    document.body.dataset.deviceCategory = currentDeviceProfile.category;
+                    document.body.dataset.layoutMode = currentDeviceProfile.wideLayout ? 'wide' : 'stacked';
+                    document.body.dataset.orientation = currentDeviceProfile.orientation;
+                }
+                return currentDeviceProfile;
+            }
+
+            function isWideLayout() {
+                return Boolean(syncDeviceProfile()?.wideLayout);
+            }
 
             const platformStats = PHASES.reduce((acc, phase) => {
                 acc.phases += 1;
@@ -1855,6 +3048,18 @@
                 });
                 return acc;
             }, { phases: 0, cards: 0, lessons: 0 });
+
+            function getDeviceStatusText() {
+                const profile = syncDeviceProfile();
+                if (!profile) return getDeviceStatusText();
+                const deviceLabel = {
+                    phone: 'smartphone',
+                    tablet: 'tablet',
+                    notebook: 'notebook',
+                    desktop: 'desktop'
+                }[profile.category] || 'dispositivo';
+                return `${platformStats.phases} fases disponíveis · layout para ${deviceLabel}`;
+            }
 
             function escapeHTML(value) {
                 return String(value)
@@ -2025,6 +3230,12 @@
             }
 
             function resetContentScroll() {
+                if (isWideLayout()) {
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                    scheduleContentFit();
+                    return;
+                }
+
                 const topBar = document.querySelector('.top-bar');
                 const topOffset = topBar ? topBar.offsetHeight + 12 : 0;
 
@@ -2033,6 +3244,112 @@
                         top: Math.max(dynamicContent.offsetTop - topOffset, 0),
                         behavior: 'auto'
                     });
+                });
+            }
+
+            function clearContentFitState() {
+                dynamicContent.classList.remove(
+                    'content-fit-applied',
+                    'content-has-video',
+                    'content-overflowing',
+                    'fit-level-0',
+                    'fit-level-1',
+                    'fit-level-2',
+                    'fit-level-3',
+                    'fit-level-4',
+                    'fit-level-5'
+                );
+                dynamicContent.removeAttribute('data-fit-level');
+                dynamicContent.style.overflowY = '';
+                rootElement.style.removeProperty('--main-content-height');
+                rootElement.style.removeProperty('--inline-video-max-height');
+                rootElement.style.removeProperty('--inline-video-max-width');
+                rootElement.style.removeProperty('--content-fit-scale');
+            }
+
+            function applyContentFitLevel(level) {
+                dynamicContent.classList.remove('fit-level-0', 'fit-level-1', 'fit-level-2', 'fit-level-3', 'fit-level-4', 'fit-level-5', 'content-overflowing');
+                dynamicContent.classList.add(`fit-level-${level}`);
+                dynamicContent.dataset.fitLevel = String(level);
+            }
+
+            function updateInlineVideoSizing(videoShell) {
+                if (!videoShell) return;
+
+                const header = videoShell.querySelector('.inline-video-header');
+                const footer = videoShell.querySelector('.inline-video-footer');
+                const shellStyles = window.getComputedStyle(videoShell);
+                const contentStyles = window.getComputedStyle(dynamicContent);
+                const shellBorder = parseFloat(shellStyles.borderTopWidth || 0) + parseFloat(shellStyles.borderBottomWidth || 0);
+                const headerVisible = header && window.getComputedStyle(header).display !== 'none';
+                const footerVisible = footer && window.getComputedStyle(footer).display !== 'none';
+                const headerHeight = headerVisible ? header.offsetHeight : 0;
+                const footerHeight = footerVisible ? footer.offsetHeight : 0;
+                const paddingX = parseFloat(contentStyles.paddingLeft || 0) + parseFloat(contentStyles.paddingRight || 0);
+                const paddingY = parseFloat(contentStyles.paddingTop || 0) + parseFloat(contentStyles.paddingBottom || 0);
+                const contentBoxHeight = Math.max(220, window.innerHeight - (document.querySelector('.top-bar')?.offsetHeight || 0) - paddingY);
+                const availableHeight = Math.max(180, Math.min(dynamicContent.clientHeight, contentBoxHeight) - headerHeight - footerHeight - shellBorder - 8);
+                const availableWidth = Math.max(260, dynamicContent.clientWidth - paddingX - 8);
+                const videoHeightByWidth = availableWidth * 9 / 16;
+                const finalHeight = Math.max(180, Math.min(availableHeight, videoHeightByWidth));
+                const finalWidth = Math.min(availableWidth, finalHeight * 16 / 9);
+
+                rootElement.style.setProperty('--inline-video-max-height', `${Math.floor(finalHeight)}px`);
+                rootElement.style.setProperty('--inline-video-max-width', `${Math.floor(finalWidth)}px`);
+            }
+
+            function autoFitMainContent() {
+                const profile = syncDeviceProfile();
+                const topBar = document.querySelector('.top-bar');
+
+                if (topBar) {
+                    rootElement.style.setProperty('--topbar-height', `${topBar.offsetHeight}px`);
+                }
+
+                if (!profile?.wideLayout) {
+                    clearContentFitState();
+                    return;
+                }
+
+                dynamicContent.classList.add('content-fit-applied');
+                dynamicContent.style.overflowY = 'hidden';
+                rootElement.style.setProperty('--main-content-height', `${dynamicContent.clientHeight}px`);
+
+                const videoShell = dynamicContent.querySelector('.inline-video-shell');
+                dynamicContent.classList.toggle('content-has-video', Boolean(videoShell));
+
+                for (let level = 0; level <= 5; level += 1) {
+                    applyContentFitLevel(level);
+                    updateInlineVideoSizing(videoShell);
+
+                    // Força a atualização do layout antes da medição seguinte.
+                    void dynamicContent.offsetHeight;
+
+                    const fitsVertically = dynamicContent.scrollHeight <= dynamicContent.clientHeight + 2;
+                    const fitsHorizontally = dynamicContent.scrollWidth <= dynamicContent.clientWidth + 2;
+
+                    if (fitsVertically && fitsHorizontally) {
+                        dynamicContent.classList.remove('content-overflowing');
+                        return;
+                    }
+                }
+
+                dynamicContent.classList.add('content-overflowing');
+                if (videoShell) {
+                    updateInlineVideoSizing(videoShell);
+                    void dynamicContent.offsetHeight;
+                    if (dynamicContent.scrollHeight > dynamicContent.clientHeight + 2) {
+                        rootElement.style.setProperty('--inline-video-max-height', `${Math.max(160, dynamicContent.clientHeight - 8)}px`);
+                        rootElement.style.setProperty('--inline-video-max-width', `${Math.max(260, dynamicContent.clientWidth - 8)}px`);
+                    }
+                }
+            }
+
+            let contentFitFrame = null;
+            function scheduleContentFit() {
+                window.cancelAnimationFrame(contentFitFrame);
+                contentFitFrame = window.requestAnimationFrame(() => {
+                    autoFitMainContent();
                 });
             }
 
@@ -2108,7 +3425,7 @@
                     ? "Selecione uma etapa no menu superior ou use a busca para encontrar aulas rapidamente."
                     : "Escolha uma fase no painel lateral ou use a busca global para localizar qualquer aula em segundos.";
 
-                updateStatusPill(`${platformStats.phases} fases disponíveis`);
+                updateStatusPill(getDeviceStatusText());
                 dynamicContent.innerHTML = `
                     <div class="phase-hero welcome-hero">
                         <i class="fa-solid fa-satellite-dish welcome-icon"></i>
@@ -2126,30 +3443,240 @@
                 `;
             }
 
+            function findVideoContextBySrc(src) {
+                for (let phaseIndex = 0; phaseIndex < PHASES.length; phaseIndex++) {
+                    const phase = PHASES[phaseIndex];
+                    for (const card of phase.cards) {
+                        const videoIndex = card.videos.findIndex(video => video.src === src);
+                        if (videoIndex !== -1) {
+                            return {
+                                phaseIndex,
+                                phase,
+                                card,
+                                video: card.videos[videoIndex],
+                                videoIndex
+                            };
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function clearSidebarTopics() {
+                document.querySelectorAll('.nav-phase-block').forEach(block => block.classList.remove('expanded'));
+                document.querySelectorAll('.nav-topic-tree').forEach(tree => {
+                    tree.innerHTML = '';
+                    tree.setAttribute('aria-hidden', 'true');
+                });
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            }
+
+            function buildSidebarTopicsHTML(phase, phaseIndex, selectedCardId = null) {
+                return phase.cards.map((card, cardIndex) => {
+                    const isSelected = selectedCardId === card.id;
+                    const cardSummary = getCardSummary(card);
+
+                    const lessonsHTML = card.videos.map((video, videoIndex) => {
+                        const safeVideoTitle = escapeHTML(video.title);
+                        const isActiveVideo = activeVideoSrc === video.src;
+                        return `
+                            <button class="sidebar-lesson-item ${isActiveVideo ? 'active' : ''}" type="button" data-phase-index="${phaseIndex}" data-card-id="${card.id}" data-src="${video.src}" data-title="${safeVideoTitle}" aria-label="Assistir ${safeVideoTitle}">
+                                <span class="sidebar-lesson-index">${String(videoIndex + 1).padStart(2, '0')}</span>
+                                <span>
+                                    <span class="nav-type-label video">Vídeo</span>
+                                    <span class="sidebar-lesson-title">${safeVideoTitle}</span>
+                                    <span class="sidebar-lesson-meta"><i class="fa-solid fa-chart-simple"></i> ${escapeHTML(video.views || '')}</span>
+                                </span>
+                            </button>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="nav-topic-block">
+                            <button class="nav-topic-btn ${isSelected ? 'active' : ''}" type="button" data-phase-index="${phaseIndex}" data-card-id="${card.id}" aria-expanded="${isSelected ? 'true' : 'false'}" aria-label="Abrir tópico ${escapeHTML(card.title)}">
+                                <span class="topic-number">${String(cardIndex + 1).padStart(2, '0')}</span>
+                                <span class="nav-phase-main"><span class="nav-type-label topic">Tópico</span><span class="nav-label-title">${escapeHTML(card.title)}</span></span>
+                                <i class="fa-solid ${isSelected ? 'fa-chevron-down' : 'fa-chevron-right'}"></i>
+                            </button>
+                            ${isSelected ? `
+                                <div class="nav-topic-panel" aria-label="Aulas disponíveis neste tópico">
+                                    <div class="sidebar-lesson-list">
+                                        ${lessonsHTML}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function renderSidebarPhaseTopics(phaseIndex, selectedCardId = null) {
+                const phase = PHASES[phaseIndex];
+
+                document.querySelectorAll('.nav-phase-block').forEach((block, index) => {
+                    const navItem = block.querySelector('.nav-item');
+                    const tree = block.querySelector('.nav-topic-tree');
+                    const isActive = index === phaseIndex;
+
+                    block.classList.toggle('expanded', isActive && isWideLayout());
+                    if (navItem) navItem.classList.toggle('active', isActive);
+
+                    if (tree) {
+                        if (isActive && isWideLayout()) {
+                            tree.innerHTML = buildSidebarTopicsHTML(phase, phaseIndex, selectedCardId);
+                            tree.setAttribute('aria-hidden', 'false');
+                        } else {
+                            tree.innerHTML = '';
+                            tree.setAttribute('aria-hidden', 'true');
+                        }
+                    }
+                });
+            }
+
+            function renderWidePhaseIntro(phase) {
+                const summary = getPhaseSummary(phase);
+                updateStatusPill(`${summary.cards} tópicos no menu lateral`);
+                dynamicContent.innerHTML = `
+                    <div class="phase-hero">
+                        <span class="phase-badge"><i class="fa-solid fa-layer-group"></i> FASE ${phase.number}</span>
+                        <h2>${escapeHTML(phase.title)}</h2>
+                        <p>${escapeHTML(phase.description)}</p>
+                    </div>
+                    ${buildStatsHTML([
+                        { icon: 'fa-cubes', value: summary.cards, label: 'Tópicos no menu lateral' },
+                        { icon: 'fa-circle-play', value: summary.lessons, label: 'Aulas disponíveis' }
+                    ])}
+                    <section class="desktop-empty-state">
+                        <i class="fa-solid fa-diagram-project"></i>
+                        <h3>Escolha um tópico no menu lateral</h3>
+                        <p>Os tópicos desta fase agora aparecem logo abaixo da fase selecionada. Ao abrir um tópico, as aulas ficam abaixo dele; ao escolher uma aula, o vídeo será exibido nesta área central.</p>
+                    </section>
+                `;
+            }
+
+            function renderWideTopicPrompt(phase, card) {
+                const cardSummary = getCardSummary(card);
+                updateStatusPill(`${cardSummary.lessons} aulas no tópico selecionado`);
+                dynamicContent.innerHTML = `
+                    <div class="phase-hero">
+                        <span class="phase-badge"><i class="fa-solid ${phase.icon}"></i> ${escapeHTML(phase.title)}</span>
+                        <h2>${escapeHTML(card.title)}</h2>
+                        <p>${escapeHTML(card.desc)}</p>
+                    </div>
+                    ${buildStatsHTML([
+                        { icon: 'fa-circle-play', value: cardSummary.lessons, label: 'Aulas neste tópico' }
+                    ])}
+                    <section class="desktop-empty-state">
+                        <i class="fa-solid fa-list-check"></i>
+                        <h3>Explicação exibida na área central</h3>
+                        <p>As informações da trilha ficam nesta área. No menu lateral permanecem apenas a hierarquia de fases, tópicos e vídeos.</p>
+                    </section>
+                `;
+            }
+
+            function openVideoInContent(src, title) {
+                const context = findVideoContextBySrc(src);
+                const safeTitle = escapeHTML(title || context?.video?.title || 'Aula selecionada');
+                const safePhaseTitle = context ? escapeHTML(context.phase.title) : 'Aula';
+                const safeCardTitle = context ? escapeHTML(context.card.title) : 'Conteúdo selecionado';
+
+                if (context) {
+                    activePhaseIndex = context.phaseIndex;
+                    activeCardId = context.card.id;
+                    renderSidebarPhaseTopics(activePhaseIndex, activeCardId);
+                }
+
+                activeVideoSrc = src;
+
+                if (modal.classList.contains('active')) {
+                    closeModal();
+                }
+
+                dynamicContent.innerHTML = `
+                    <section class="inline-video-shell">
+                        <div class="inline-video-header">
+                            <div>
+                                <span class="inline-video-kicker"><i class="fa-solid fa-circle-play"></i> Aula selecionada</span>
+                                <h2>${safeTitle}</h2>
+                                <p class="inline-video-subtitle">${safePhaseTitle} · ${safeCardTitle}</p>
+                            </div>
+                            <span class="meta-chip"><i class="fa-solid fa-display"></i> Reprodução central</span>
+                        </div>
+                        <div class="inline-video-wrapper">
+                            <iframe src="${src}" title="${safeTitle}" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div class="inline-video-footer">
+                            <span><i class="fa-solid fa-circle-info"></i> O vídeo agora abre fora do modal em telas maiores.</span>
+                            <span><i class="fa-solid fa-bars-staggered"></i> Continue escolhendo aulas pelo menu lateral.</span>
+                        </div>
+                    </section>
+                `;
+
+                saveRecentLesson({ src, title: title || context?.video?.title || 'Aula selecionada' });
+                updateStatusPill('Aula em reprodução');
+                resetContentScroll();
+            }
+
             // --- Navegação Lateral / Mobile ---
             function initNav() {
-                navMenu.innerHTML = ''; 
+                navMenu.innerHTML = '';
+                navMenu.insertAdjacentHTML('beforeend', `
+                    <div class="sidebar-legend" aria-label="Legenda visual do menu lateral">
+                        <div class="sidebar-legend-title"><i class="fa-solid fa-palette"></i> Legenda do menu</div>
+                        <div class="sidebar-legend-row"><span class="legend-dot phase"></span> Fase de estudo</div>
+                        <div class="sidebar-legend-row"><span class="legend-dot topic"></span> Tópico da fase</div>
+                        <div class="sidebar-legend-row"><span class="legend-dot video"></span> Conteúdo em vídeo</div>
+                    </div>
+                `);
+
                 PHASES.forEach((phase, index) => {
+                    const phaseBlock = document.createElement('div');
+                    phaseBlock.className = 'nav-phase-block';
+                    phaseBlock.setAttribute('data-phase-index', index);
+
                     const navItem = document.createElement('div');
-                    // Inicialmente nenhuma classe 'active'
-                    navItem.className = `nav-item`;
-                    navItem.innerHTML = `<i class="fa-solid ${phase.icon}"></i> <span>${phase.title}</span>`;
-                    
+                    navItem.className = 'nav-item';
+                    navItem.setAttribute('role', 'button');
+                    navItem.setAttribute('tabindex', '0');
+                    navItem.innerHTML = `<i class="fa-solid ${phase.icon}"></i> <span class="nav-phase-main"><span class="nav-type-label phase">Fase</span><span class="nav-label-title">${escapeHTML(phase.title)}</span></span>`;
+
+                    const topicTree = document.createElement('div');
+                    topicTree.className = 'nav-topic-tree';
+                    topicTree.setAttribute('aria-hidden', 'true');
+
                     navItem.addEventListener('click', () => {
                         searchInput.value = '';
-                        closeMobileMenu(); // Fecha o menu sanduíche no mobile
-                        
-                        if (activePhaseIndex === index) return;
-                        
-                        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                        navItem.classList.add('active');
-                        
+
+                        if (activePhaseIndex === index && !searchInput.value.trim()) return;
+
                         activePhaseIndex = index;
-                        renderPhase(PHASES[activePhaseIndex]);
+                        activeCardId = null;
+                        activeVideoSrc = null;
+
+                        if (isWideLayout()) {
+                            renderSidebarPhaseTopics(index);
+                            renderWidePhaseIntro(PHASES[index]);
+                        } else {
+                            closeMobileMenu();
+                            clearSidebarTopics();
+                            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                            navItem.classList.add('active');
+                            renderPhase(PHASES[activePhaseIndex]);
+                        }
+
                         resetContentScroll();
                     });
-                    
-                    navMenu.appendChild(navItem);
+
+                    navItem.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navItem.click();
+                        }
+                    });
+
+                    phaseBlock.appendChild(navItem);
+                    phaseBlock.appendChild(topicTree);
+                    navMenu.appendChild(phaseBlock);
                 });
             }
 
@@ -2244,17 +3771,26 @@
 
                 if (!tokens.length) {
                     if(activePhaseIndex !== null) {
-                        renderPhase(PHASES[activePhaseIndex]);
-                        const items = document.querySelectorAll('.nav-item');
-                        if(items[activePhaseIndex]) items[activePhaseIndex].classList.add('active');
+                        if (isWideLayout()) {
+                            renderSidebarPhaseTopics(activePhaseIndex, activeCardId);
+                            renderWidePhaseIntro(PHASES[activePhaseIndex]);
+                        } else {
+                            renderPhase(PHASES[activePhaseIndex]);
+                            const items = document.querySelectorAll('.nav-item');
+                            if(items[activePhaseIndex]) items[activePhaseIndex].classList.add('active');
+                        }
                     } else {
                         renderWelcome();
                     }
-                    updateStatusPill(activePhaseIndex !== null ? `${getPhaseSummary(PHASES[activePhaseIndex]).lessons} aulas nesta fase` : `${platformStats.phases} fases disponíveis`);
+                    updateStatusPill(activePhaseIndex !== null ? `${getPhaseSummary(PHASES[activePhaseIndex]).lessons} aulas nesta fase` : getDeviceStatusText());
                     return;
                 }
 
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                if (isWideLayout()) {
+                    document.querySelectorAll('.nav-phase-block').forEach(block => block.classList.remove('expanded'));
+                    document.querySelectorAll('.nav-topic-tree').forEach(tree => tree.setAttribute('aria-hidden', 'true'));
+                }
 
                 let totalLessonsFound = 0;
                 let totalCardsFound = 0;
@@ -2360,6 +3896,7 @@
 
             // --- Controle Dinâmico do Modal (Iframe) ---
             const openModal = (src, title) => {
+                activeVideoSrc = src;
                 modalTitle.textContent = title;
                 videoWrapper.innerHTML = `<iframe src="${src}" title="${escapeHTML(title)}" frameborder="0" allowfullscreen></iframe>`;
                 modal.classList.add('active');
@@ -2380,12 +3917,62 @@
                 searchInput.focus();
             });
 
+            navMenu.addEventListener('click', (e) => {
+                if (!isWideLayout()) return;
+
+                const topicBtn = e.target.closest('.nav-topic-btn');
+                if (topicBtn) {
+                    e.preventDefault();
+                    const phaseIndex = Number(topicBtn.getAttribute('data-phase-index'));
+                    const cardId = topicBtn.getAttribute('data-card-id');
+                    const phase = PHASES[phaseIndex];
+                    const card = phase?.cards.find(item => item.id === cardId);
+
+                    if (!phase || !card) return;
+
+                    activePhaseIndex = phaseIndex;
+                    activeCardId = cardId;
+                    activeVideoSrc = null;
+                    renderSidebarPhaseTopics(phaseIndex, cardId);
+                    renderWideTopicPrompt(phase, card);
+                    resetContentScroll();
+                    return;
+                }
+
+                const sidebarLesson = e.target.closest('.sidebar-lesson-item');
+                if (sidebarLesson) {
+                    e.preventDefault();
+                    const phaseIndex = Number(sidebarLesson.getAttribute('data-phase-index'));
+                    const cardId = sidebarLesson.getAttribute('data-card-id');
+                    const src = sidebarLesson.getAttribute('data-src');
+                    const title = sidebarLesson.getAttribute('data-title');
+
+                    activePhaseIndex = phaseIndex;
+                    activeCardId = cardId;
+                    activeVideoSrc = src;
+                    renderSidebarPhaseTopics(phaseIndex, cardId);
+                    openVideoInContent(src, title);
+                }
+            });
+
+            navMenu.addEventListener('keydown', (e) => {
+                const actionable = e.target.closest('.nav-topic-btn, .sidebar-lesson-item');
+                if (actionable && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    actionable.click();
+                }
+            });
+
             dynamicContent.addEventListener('click', (e) => {
                 const actionItem = e.target.closest('.lesson-item, .resume-card');
                 if (actionItem) {
                     const src = actionItem.getAttribute('data-src');
                     const title = actionItem.getAttribute('data-title');
-                    openModal(src, title);
+                    if (isWideLayout()) {
+                        openVideoInContent(src, title);
+                    } else {
+                        openModal(src, title);
+                    }
                     return;
                 }
 
@@ -2463,9 +4050,67 @@
                 if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
             });
 
+            let previousWideLayout = isWideLayout();
+            window.addEventListener('resize', () => {
+                const currentProfile = syncDeviceProfile();
+                const currentWideLayout = Boolean(currentProfile?.wideLayout);
+
+                if (currentWideLayout === previousWideLayout) {
+                    scheduleContentFit();
+                    return;
+                }
+
+                previousWideLayout = currentWideLayout;
+
+                if (activePhaseIndex === null) {
+                    clearSidebarTopics();
+                    renderWelcome();
+                    scheduleContentFit();
+                    return;
+                }
+
+                if (currentWideLayout) {
+                    if (activeVideoSrc) {
+                        openVideoInContent(activeVideoSrc, findVideoContextBySrc(activeVideoSrc)?.video?.title || 'Aula selecionada');
+                    } else {
+                        renderSidebarPhaseTopics(activePhaseIndex, activeCardId);
+                        renderWidePhaseIntro(PHASES[activePhaseIndex]);
+                    }
+                } else {
+                    clearSidebarTopics();
+                    renderPhase(PHASES[activePhaseIndex]);
+                    const items = document.querySelectorAll('.nav-item');
+                    if(items[activePhaseIndex]) items[activePhaseIndex].classList.add('active');
+                }
+
+                scheduleContentFit();
+            });
+
+            document.addEventListener('adaptive-profile-change', () => {
+                syncDeviceProfile();
+                scheduleContentFit();
+            });
+
+            const contentMutationObserver = new MutationObserver(() => {
+                scheduleContentFit();
+            });
+
+            contentMutationObserver.observe(dynamicContent, {
+                childList: true,
+                subtree: false
+            });
+
+            if (window.ResizeObserver) {
+                const fitResizeObserver = new ResizeObserver(() => scheduleContentFit());
+                fitResizeObserver.observe(dynamicContent);
+                fitResizeObserver.observe(document.querySelector('.top-bar'));
+            }
+
             // --- Boot Sequence (Inicializa Interface e carrega o Vazio) ---
+            syncDeviceProfile();
             initNav();
             renderWelcome();
+            scheduleContentFit();
         });
     </script>
 </body>
