@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
@@ -3645,25 +3646,57 @@
                     topicTree.setAttribute('aria-hidden', 'true');
 
                     navItem.addEventListener('click', () => {
+                        const hadSearch = searchInput.value.trim() !== '';
+                        const samePhase = activePhaseIndex === index;
+                        const phaseIsExpanded = phaseBlock.classList.contains('expanded');
                         searchInput.value = '';
 
-                        if (activePhaseIndex === index && !searchInput.value.trim()) return;
+                        if (isWideLayout()) {
+                            if (samePhase && !hadSearch) {
+                                if (phaseIsExpanded) {
+                                    phaseBlock.classList.remove('expanded');
+                                    const tree = phaseBlock.querySelector('.nav-topic-tree');
+                                    if (tree) {
+                                        tree.innerHTML = '';
+                                        tree.setAttribute('aria-hidden', 'true');
+                                    }
+                                } else {
+                                    renderSidebarPhaseTopics(index, activeCardId);
+                                }
+                                updateStatusPill(`${getPhaseSummary(PHASES[index]).lessons} aulas nesta fase`);
+                                resetContentScroll();
+                                return;
+                            }
+
+                            activePhaseIndex = index;
+                            activeCardId = null;
+                            activeVideoSrc = null;
+                            renderSidebarPhaseTopics(index);
+                            renderWidePhaseIntro(PHASES[index]);
+                            resetContentScroll();
+                            return;
+                        }
+
+                        if (samePhase && !hadSearch) {
+                            activePhaseIndex = null;
+                            activeCardId = null;
+                            activeVideoSrc = null;
+                            closeMobileMenu();
+                            clearSidebarTopics();
+                            renderWelcome();
+                            updateStatusPill(getDeviceStatusText());
+                            resetContentScroll();
+                            return;
+                        }
 
                         activePhaseIndex = index;
                         activeCardId = null;
                         activeVideoSrc = null;
-
-                        if (isWideLayout()) {
-                            renderSidebarPhaseTopics(index);
-                            renderWidePhaseIntro(PHASES[index]);
-                        } else {
-                            closeMobileMenu();
-                            clearSidebarTopics();
-                            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                            navItem.classList.add('active');
-                            renderPhase(PHASES[activePhaseIndex]);
-                        }
-
+                        closeMobileMenu();
+                        clearSidebarTopics();
+                        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                        navItem.classList.add('active');
+                        renderPhase(PHASES[activePhaseIndex]);
                         resetContentScroll();
                     });
 
@@ -3927,10 +3960,21 @@
                     const cardId = topicBtn.getAttribute('data-card-id');
                     const phase = PHASES[phaseIndex];
                     const card = phase?.cards.find(item => item.id === cardId);
+                    const sameOpenTopic = activePhaseIndex === phaseIndex && activeCardId === cardId && topicBtn.getAttribute('aria-expanded') === 'true';
 
                     if (!phase || !card) return;
 
                     activePhaseIndex = phaseIndex;
+
+                    if (sameOpenTopic) {
+                        activeCardId = null;
+                        activeVideoSrc = null;
+                        renderSidebarPhaseTopics(phaseIndex, null);
+                        renderWidePhaseIntro(phase);
+                        resetContentScroll();
+                        return;
+                    }
+
                     activeCardId = cardId;
                     activeVideoSrc = null;
                     renderSidebarPhaseTopics(phaseIndex, cardId);
